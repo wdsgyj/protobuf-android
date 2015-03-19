@@ -133,8 +133,16 @@ bool JavaMicroGenerator::Generate(const FileDescriptor* file,
         params.set_java_outer_classname(parts[0], parts[1]);
     } else if (options[i].first == "java_multiple_files") {
         params.set_override_java_multiple_files(options[i].second == "true");
-    } else if (options[i].first == "java_use_vector") {
-        params.set_java_use_vector(options[i].second == "true");
+    } 
+    /*else if (options[i].first == "java_use_vector") {
+    params.set_java_use_vector(options[i].second == "true");
+    }*/ 
+    else if (options[i].first == "java_use_json") {
+        params.set_java_use_json(options[i].second == "true");
+    } else if (options[i].first == "java_simple_parsefrom") {
+        params.set_java_simple_parsefrom(options[i].second == "true");
+    } else if (options[i].first == "java_same_package") {
+        params.set_java_same_package(options[i].second);
     } else {
       *error = "Ignore unknown javamicro generator option: " + options[i].first;
     }

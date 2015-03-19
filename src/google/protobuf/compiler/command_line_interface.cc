@@ -1031,7 +1031,7 @@ CommandLineInterface::InterpretArgument(const string& name,
     if (!version_info_.empty()) {
       cout << version_info_ << endl;
     }
-    cout << "libprotoc "
+    cout << "libprotoc (clark modify version) "
          << protobuf::internal::VersionString(GOOGLE_PROTOBUF_VERSION)
          << endl;
     return PARSE_ARGUMENT_DONE_AND_EXIT;  // Exit without running compiler.

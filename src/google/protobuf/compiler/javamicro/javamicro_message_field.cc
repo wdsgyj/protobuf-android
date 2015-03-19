@@ -62,6 +62,7 @@ void SetMessageVariables(const Params& params,
     (descriptor->type() == FieldDescriptor::TYPE_GROUP) ?
     "Group" : "Message";
   (*variables)["message_name"] = descriptor->containing_type()->name();
+  (*variables)["original_name"] = descriptor->name();
   //(*variables)["message_type"] = descriptor->message_type()->name();
 }
 
@@ -78,6 +79,29 @@ MessageFieldGenerator(const FieldDescriptor* descriptor, const Params& params)
 MessageFieldGenerator::~MessageFieldGenerator() {}
 
 void MessageFieldGenerator::
+GenerateFromJsonCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (json.has(\"$original_name$\")) {\n"
+    "  org.json.JSONObject value = json.optJSONObject(\"$original_name$\");\n"
+    "  if (value != null) {\n"
+    "    result.set$capitalized_name$(\n"
+    "            $type$.fromJSON(value.toString()));\n"
+    "  }\n"
+    "}\n");
+}
+
+void MessageFieldGenerator::
+GenerateToJsonCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (has$capitalized_name$()) {\n"
+    "  $type$ value = get$capitalized_name$();\n"
+    "  if (value != null) {\n"
+    "    stringer.key(\"$original_name$\").value(new org.json.JSONObject(value.toJSON()));\n"
+    "  }\n"
+    "}\n");
+}
+
+void MessageFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "private boolean has$capitalized_name$;\n"
@@ -89,7 +113,8 @@ GenerateMembers(io::Printer* printer) const {
     "public $type$ get$capitalized_name$() { return $name$_; }\n"
     "public $message_name$ set$capitalized_name$($type$ value) {\n"
     "  if (value == null) {\n"
-    "    throw new NullPointerException();\n"
+//    "    throw new NullPointerException();\n"
+    "    return clear$capitalized_name$();\n"
     "  }\n"
     "  has$capitalized_name$ = true;\n"
     "  $name$_ = value;\n"
@@ -159,6 +184,40 @@ RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor, const Params& p
 RepeatedMessageFieldGenerator::~RepeatedMessageFieldGenerator() {}
 
 void RepeatedMessageFieldGenerator::
+GenerateFromJsonCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (json.has(\"$original_name$\")) {\n"
+    "  array = json.getJSONArray(\"$original_name$\");\n"
+    "  count = array.length();\n"
+    "  org.json.JSONObject value;\n"
+    "  for (int i = 0; i < count; ++i) {\n"
+    "    value = array.optJSONObject(i);\n"
+    "    if (value != null) {\n"
+    "      result.add$capitalized_name$(\n"
+    "              $type$.fromJSON(value.toString()));\n"
+    "    }\n"
+    "  }\n"
+    "}\n");
+}
+
+void RepeatedMessageFieldGenerator::
+GenerateToJsonCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "count = get$capitalized_name$Count();\n"
+    "if (count > 0) {\n"
+    "  stringer.key(\"$original_name$\").array();\n"
+    "  $type$ value;\n"
+    "  for (int i = 0; i < count; ++i) {\n"
+    "    value = get$capitalized_name$(i);\n"
+    "    if (value != null) {\n"
+    "      stringer.value(new org.json.JSONObject(value.toJSON()));\n"
+    "    }\n"
+    "  }\n"
+    "  stringer.endArray();\n"
+    "}\n");
+}
+
+void RepeatedMessageFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   if (params_.java_use_vector()) {
     printer->Print(variables_,
@@ -172,14 +231,16 @@ GenerateMembers(io::Printer* printer) const {
       "}\n"
       "public $message_name$ set$capitalized_name$(int index, $type$ value) {\n"
       "  if (value == null) {\n"
-      "    throw new NullPointerException();\n"
+      //"    throw new NullPointerException();\n"
+      "    return this;\n"
       "  }\n"
       "  $name$_.setElementAt(value, index);\n"
       "  return this;\n"
       "}\n"
       "public $message_name$ add$capitalized_name$($type$ value) {\n"
       "  if (value == null) {\n"
-      "    throw new NullPointerException();\n"
+      //"    throw new NullPointerException();\n"
+      "    return this;\n"
       "  }\n"
       "  $name$_.addElement(value);\n"
       "  return this;\n"
@@ -201,14 +262,16 @@ GenerateMembers(io::Printer* printer) const {
       "}\n"
       "public $message_name$ set$capitalized_name$(int index, $type$ value) {\n"
       "  if (value == null) {\n"
-      "    throw new NullPointerException();\n"
+      //"    throw new NullPointerException();\n"
+      "    return this;\n"
       "  }\n"
       "  $name$_.set(index, value);\n"
       "  return this;\n"
       "}\n"
       "public $message_name$ add$capitalized_name$($type$ value) {\n"
       "  if (value == null) {\n"
-      "    throw new NullPointerException();\n"
+      //"    throw new NullPointerException();\n"
+      "    return this;\n"
       "  }\n"
       "  if ($name$_.isEmpty()) {\n"
       "    $name$_ = new java.util.ArrayList<$type$>();\n"

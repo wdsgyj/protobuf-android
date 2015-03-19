@@ -55,6 +55,8 @@ class PrimitiveFieldGenerator : public FieldGenerator {
   void GenerateParsingCode(io::Printer* printer) const;
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;
+  void GenerateToJsonCode(io::Printer* printer) const;
+  void GenerateFromJsonCode(io::Printer* printer) const;
 
   string GetBoxedType() const;
 
@@ -76,6 +78,8 @@ class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
   void GenerateParsingCode(io::Printer* printer) const;
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;
+  void GenerateToJsonCode(io::Printer* printer) const;
+  void GenerateFromJsonCode(io::Printer* printer) const;
 
   string GetBoxedType() const;
 

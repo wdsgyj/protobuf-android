@@ -137,6 +137,10 @@ string FileClassName(const Params& params, const FileDescriptor* file) {
 }
 
 string FileJavaPackage(const Params& params, const FileDescriptor* file) {
+  const string& same_name = params.java_same_package();
+  if (!same_name.empty()) {
+    return same_name;
+  }
   if (params.has_java_package(file->name())) {
     return params.java_package(file->name());
   } else {

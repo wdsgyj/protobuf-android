@@ -62,6 +62,8 @@ class FieldGenerator {
   virtual void GenerateParsingCode(io::Printer* printer) const = 0;
   virtual void GenerateSerializationCode(io::Printer* printer) const = 0;
   virtual void GenerateSerializedSizeCode(io::Printer* printer) const = 0;
+  virtual void GenerateToJsonCode(io::Printer* printer) const = 0;
+  virtual void GenerateFromJsonCode(io::Printer* printer) const = 0;
 
   virtual string GetBoxedType() const = 0;
 

@@ -77,6 +77,8 @@ class MessageGenerator {
 
   void GenerateClear(io::Printer* printer);
   void GenerateIsInitialized(io::Printer* printer);
+  void GenerateToJsonCode(io::Printer* printer);
+  void GenerateFromJsonCode(io::Printer* printer);
 
   const Params& params_;
   const Descriptor* descriptor_;

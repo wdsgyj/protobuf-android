@@ -134,6 +134,17 @@ static bool HasRequiredFields(const Descriptor* type) {
   return HasRequiredFields(type, &already_seen);
 }
 
+static bool HasRepeatedFields(const Descriptor* type) {
+  int count = type->field_count();
+  for (int i = 0; i < count; ++i) {
+    const FieldDescriptor* field = type->field(i);
+    if (field->is_repeated()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 // ===================================================================
@@ -220,11 +231,66 @@ void MessageGenerator::Generate(io::Printer* printer) {
   GenerateMergeFromMethods(printer);
   GenerateParseFromMethods(printer);
 
+  if (params_.java_use_json()) {
+    GenerateToJsonCode(printer);
+    GenerateFromJsonCode(printer);
+  }
   printer->Outdent();
   printer->Print("}\n\n");
 }
 
 // ===================================================================
+
+void MessageGenerator::
+GenerateFromJsonCode(io::Printer* printer) {
+  scoped_array<const FieldDescriptor*> sorted_fields(
+    SortFieldsByNumber(descriptor_));
+  printer->Print(
+    "public static $classname$ fromJSON(String text) throws org.json.JSONException {\n"
+    "  org.json.JSONObject json = new org.json.JSONObject(text);\n"
+    "  $classname$ result = new $classname$();\n",
+    "classname", descriptor_->name());
+  if (HasRepeatedFields(descriptor_)) {
+    printer->Print(
+      "  org.json.JSONArray array;\n"
+      "  int count;\n");
+  }
+  printer->Indent();
+
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    field_generators_.get(sorted_fields[i]).GenerateFromJsonCode(printer);
+  }
+
+  printer->Outdent();
+  printer->Print(
+    "  return result;\n"
+    "}\n\n");
+}
+
+void MessageGenerator::
+GenerateToJsonCode(io::Printer* printer) {
+  scoped_array<const FieldDescriptor*> sorted_fields(
+    SortFieldsByNumber(descriptor_));
+  printer->Print(
+    "@Override\n"
+    "public String toJSON() throws org.json.JSONException {\n"
+    "  org.json.JSONStringer stringer = new org.json.JSONStringer();\n"
+    "  stringer.object();\n");
+  if (HasRepeatedFields(descriptor_)) {
+    printer->Print("  int count;\n");
+  }
+  printer->Indent();
+
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    field_generators_.get(sorted_fields[i]).GenerateToJsonCode(printer);
+  }
+
+  printer->Outdent();
+  printer->Print(
+    "  stringer.endObject();\n"
+    "  return stringer.toString();\n"
+    "}\n\n");
+}
 
 void MessageGenerator::
 GenerateMessageSerializationMethods(io::Printer* printer) {
@@ -357,19 +423,31 @@ GenerateParseFromMethods(io::Printer* printer) {
   // Note:  These are separate from GenerateMessageSerializationMethods()
   //   because they need to be generated even for messages that are optimized
   //   for code size.
-  printer->Print(
-    "public static $classname$ parseFrom(byte[] data)\n"
-    "    throws com.google.protobuf.micro.InvalidProtocolBufferMicroException {\n"
-    "  return ($classname$) (new $classname$().mergeFrom(data));\n"
-    "}\n"
-    "\n"
-    "public static $classname$ parseFrom(\n"
-    "        com.google.protobuf.micro.CodedInputStreamMicro input)\n"
-    "    throws java.io.IOException {\n"
-    "  return new $classname$().mergeFrom(input);\n"
-    "}\n"
-    "\n",
-    "classname", descriptor_->name());
+  if (!params_.java_simple_parsefrom()) {
+    printer->Print(
+      "public static $classname$ parseFrom(byte[] data)\n"
+      "    throws com.google.protobuf.micro.InvalidProtocolBufferMicroException {\n"
+      "  return ($classname$) (new $classname$().mergeFrom(data));\n"
+      "}\n"
+      "\n"
+      "public static $classname$ parseFrom(byte[] data, int off, int len)\n"
+      "    throws com.google.protobuf.micro.InvalidProtocolBufferMicroException {\n"
+      "  return ($classname$) (new $classname$().mergeFrom(data, off, len));\n"
+      "}\n"
+      "\n"
+      "public static $classname$ parseFrom(java.io.InputStream inputStream)\n"
+      "    throws java.io.IOException {\n"
+      "  return parseFrom(com.google.protobuf.micro.CodedInputStreamMicro.newInstance(inputStream));\n"
+      "}\n"
+      "\n"
+      "public static $classname$ parseFrom(\n"
+      "        com.google.protobuf.micro.CodedInputStreamMicro input)\n"
+      "    throws java.io.IOException {\n"
+      "  return new $classname$().mergeFrom(input);\n"
+      "}\n"
+      "\n",
+      "classname", descriptor_->name());
+  }
 }
 
 void MessageGenerator::GenerateSerializeOneField(
