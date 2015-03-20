@@ -59,6 +59,7 @@ class Params {
   bool java_use_vector_;
   bool java_use_json_;
   bool java_simple_parsefrom_;
+  bool java_no_set_;
   NameMap java_packages_;
   NameMap java_outer_classnames_;
   NameSet java_multiple_files_;
@@ -70,8 +71,9 @@ class Params {
     optimization_(JAVAMICRO_OPT_DEFAULT),
     override_java_multiple_files_(JAVAMICRO_MUL_UNSET),
     java_use_vector_(false),
-	java_use_json_(false),
-	java_simple_parsefrom_(false) {
+    java_use_json_(false),
+    java_simple_parsefrom_(false),
+    java_no_set_(false) {
   }
 
   const string& base_name() const {
@@ -178,6 +180,13 @@ class Params {
   }
   bool java_simple_parsefrom() const {
     return java_simple_parsefrom_;
+  }
+
+  void set_java_no_set(bool value) {
+    java_no_set_ = value;
+  }
+  bool java_no_set() const {
+    return java_no_set_;
   }
   
   void set_java_same_package(const string& name) {
