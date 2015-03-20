@@ -58,7 +58,8 @@ namespace protobuf {
 //   in addition to your own.  Since this functionality is only useful to those
 //   writing custom compilers, it is in a separate library called "libprotoc"
 //   which you will have to link against.
-namespace compiler {}
+namespace compiler {
+}
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google

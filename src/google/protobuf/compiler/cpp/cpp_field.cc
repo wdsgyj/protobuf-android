@@ -54,113 +54,123 @@ namespace cpp {
 using internal::WireFormat;
 
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
-                             map<string, string>* variables,
-                             const Options& options) {
-  (*variables)["name"] = FieldName(descriptor);
-  (*variables)["index"] = SimpleItoa(descriptor->index());
-  (*variables)["number"] = SimpleItoa(descriptor->number());
-  (*variables)["classname"] = ClassName(FieldScope(descriptor), false);
-  (*variables)["declared_type"] = DeclaredTypeMethodName(descriptor->type());
+        map<string, string>* variables,
+        const Options& options)
+{
+    (*variables)["name"] = FieldName(descriptor);
+    (*variables)["index"] = SimpleItoa(descriptor->index());
+    (*variables)["number"] = SimpleItoa(descriptor->number());
+    (*variables)["classname"] = ClassName(FieldScope(descriptor), false);
+    (*variables)["declared_type"] = DeclaredTypeMethodName(descriptor->type());
 
-  (*variables)["tag_size"] = SimpleItoa(
-    WireFormat::TagSize(descriptor->number(), descriptor->type()));
-  (*variables)["deprecation"] = descriptor->options().deprecated()
-      ? " PROTOBUF_DEPRECATED" : "";
+    (*variables)["tag_size"] = SimpleItoa(
+            WireFormat::TagSize(descriptor->number(), descriptor->type()));
+    (*variables)["deprecation"] = descriptor->options().deprecated()
+            ? " PROTOBUF_DEPRECATED" : "";
 
-  (*variables)["cppget"] = "Get";
+    (*variables)["cppget"] = "Get";
 }
 
 void SetCommonOneofFieldVariables(const FieldDescriptor* descriptor,
-                                  map<string, string>* variables) {
-  (*variables)["oneof_prefix"] = descriptor->containing_oneof()->name() + "_.";
-  (*variables)["oneof_name"] = descriptor->containing_oneof()->name();
+        map<string, string>* variables)
+{
+    (*variables)["oneof_prefix"] = descriptor->containing_oneof()->name() + "_.";
+    (*variables)["oneof_name"] = descriptor->containing_oneof()->name();
 }
 
-FieldGenerator::~FieldGenerator() {}
+FieldGenerator::~FieldGenerator()
+{
+}
 
 void FieldGenerator::
-GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
-  // Reaching here indicates a bug. Cases are:
-  //   - This FieldGenerator should support packing, but this method should be
-  //     overridden.
-  //   - This FieldGenerator doesn't support packing, and this method should
-  //     never have been called.
-  GOOGLE_LOG(FATAL) << "GenerateMergeFromCodedStreamWithPacking() "
-             << "called on field generator that does not support packing.";
+GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const
+{
+    // Reaching here indicates a bug. Cases are:
+    //   - This FieldGenerator should support packing, but this method should be
+    //     overridden.
+    //   - This FieldGenerator doesn't support packing, and this method should
+    //     never have been called.
+    GOOGLE_LOG(FATAL) << "GenerateMergeFromCodedStreamWithPacking() "
+            << "called on field generator that does not support packing.";
 
 }
 
 FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor,
-                                     const Options& options)
-    : descriptor_(descriptor),
-      field_generators_(
-          new scoped_ptr<FieldGenerator>[descriptor->field_count()]) {
-  // Construct all the FieldGenerators.
-  for (int i = 0; i < descriptor->field_count(); i++) {
-    field_generators_[i].reset(MakeGenerator(descriptor->field(i), options));
-  }
+        const Options& options)
+: descriptor_(descriptor),
+field_generators_(
+new scoped_ptr<FieldGenerator>[descriptor->field_count()])
+{
+    // Construct all the FieldGenerators.
+    for (int i = 0; i < descriptor->field_count(); i++) {
+        field_generators_[i].reset(MakeGenerator(descriptor->field(i), options));
+    }
 }
 
 FieldGenerator* FieldGeneratorMap::MakeGenerator(const FieldDescriptor* field,
-                                                 const Options& options) {
-  if (field->is_repeated()) {
-    switch (field->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        return new RepeatedMessageFieldGenerator(field, options);
-      case FieldDescriptor::CPPTYPE_STRING:
-        switch (field->options().ctype()) {
-          default:  // RepeatedStringFieldGenerator handles unknown ctypes.
-          case FieldOptions::STRING:
-            return new RepeatedStringFieldGenerator(field, options);
+        const Options& options)
+{
+    if (field->is_repeated()) {
+        switch (field->cpp_type()) {
+        case FieldDescriptor::CPPTYPE_MESSAGE:
+            return new RepeatedMessageFieldGenerator(field, options);
+        case FieldDescriptor::CPPTYPE_STRING:
+            switch (field->options().ctype()) {
+            default: // RepeatedStringFieldGenerator handles unknown ctypes.
+            case FieldOptions::STRING:
+                return new RepeatedStringFieldGenerator(field, options);
+            }
+        case FieldDescriptor::CPPTYPE_ENUM:
+            return new RepeatedEnumFieldGenerator(field, options);
+        default:
+            return new RepeatedPrimitiveFieldGenerator(field, options);
         }
-      case FieldDescriptor::CPPTYPE_ENUM:
-        return new RepeatedEnumFieldGenerator(field, options);
-      default:
-        return new RepeatedPrimitiveFieldGenerator(field, options);
-    }
-  } else if (field->containing_oneof()) {
-    switch (field->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        return new MessageOneofFieldGenerator(field, options);
-      case FieldDescriptor::CPPTYPE_STRING:
-        switch (field->options().ctype()) {
-          default:  // StringOneofFieldGenerator handles unknown ctypes.
-          case FieldOptions::STRING:
-            return new StringOneofFieldGenerator(field, options);
+    } else if (field->containing_oneof()) {
+        switch (field->cpp_type()) {
+        case FieldDescriptor::CPPTYPE_MESSAGE:
+            return new MessageOneofFieldGenerator(field, options);
+        case FieldDescriptor::CPPTYPE_STRING:
+            switch (field->options().ctype()) {
+            default: // StringOneofFieldGenerator handles unknown ctypes.
+            case FieldOptions::STRING:
+                return new StringOneofFieldGenerator(field, options);
+            }
+        case FieldDescriptor::CPPTYPE_ENUM:
+            return new EnumOneofFieldGenerator(field, options);
+        default:
+            return new PrimitiveOneofFieldGenerator(field, options);
         }
-      case FieldDescriptor::CPPTYPE_ENUM:
-        return new EnumOneofFieldGenerator(field, options);
-      default:
-        return new PrimitiveOneofFieldGenerator(field, options);
-    }
-  } else {
-    switch (field->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        return new MessageFieldGenerator(field, options);
-      case FieldDescriptor::CPPTYPE_STRING:
-        switch (field->options().ctype()) {
-          default:  // StringFieldGenerator handles unknown ctypes.
-          case FieldOptions::STRING:
-            return new StringFieldGenerator(field, options);
+    } else {
+        switch (field->cpp_type()) {
+        case FieldDescriptor::CPPTYPE_MESSAGE:
+            return new MessageFieldGenerator(field, options);
+        case FieldDescriptor::CPPTYPE_STRING:
+            switch (field->options().ctype()) {
+            default: // StringFieldGenerator handles unknown ctypes.
+            case FieldOptions::STRING:
+                return new StringFieldGenerator(field, options);
+            }
+        case FieldDescriptor::CPPTYPE_ENUM:
+            return new EnumFieldGenerator(field, options);
+        default:
+            return new PrimitiveFieldGenerator(field, options);
         }
-      case FieldDescriptor::CPPTYPE_ENUM:
-        return new EnumFieldGenerator(field, options);
-      default:
-        return new PrimitiveFieldGenerator(field, options);
     }
-  }
 }
 
-FieldGeneratorMap::~FieldGeneratorMap() {}
+FieldGeneratorMap::~FieldGeneratorMap()
+{
+}
 
 const FieldGenerator& FieldGeneratorMap::get(
-    const FieldDescriptor* field) const {
-  GOOGLE_CHECK_EQ(field->containing_type(), descriptor_);
-  return *field_generators_[field->index()];
+        const FieldDescriptor* field) const
+{
+    GOOGLE_CHECK_EQ(field->containing_type(), descriptor_);
+    return *field_generators_[field->index()];
 }
 
 
-}  // namespace cpp
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace cpp
+} // namespace compiler
+} // namespace protobuf
+} // namespace google

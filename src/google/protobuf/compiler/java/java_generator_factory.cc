@@ -45,33 +45,45 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
-GeneratorFactory::GeneratorFactory() {}
-GeneratorFactory::~GeneratorFactory() {}
+GeneratorFactory::GeneratorFactory()
+{
+}
+
+GeneratorFactory::~GeneratorFactory()
+{
+}
 
 // ===================================================================
 
 ImmutableGeneratorFactory::ImmutableGeneratorFactory(
-    Context* context) : context_(context) {
+        Context* context) : context_(context)
+{
 }
-ImmutableGeneratorFactory::~ImmutableGeneratorFactory() {}
+
+ImmutableGeneratorFactory::~ImmutableGeneratorFactory()
+{
+}
 
 MessageGenerator* ImmutableGeneratorFactory::NewMessageGenerator(
-    const Descriptor* descriptor) const {
-  return new ImmutableMessageGenerator(descriptor, context_);
+        const Descriptor* descriptor) const
+{
+    return new ImmutableMessageGenerator(descriptor, context_);
 }
 
 ExtensionGenerator* ImmutableGeneratorFactory::NewExtensionGenerator(
-    const FieldDescriptor* descriptor) const {
-  return new ImmutableExtensionGenerator(descriptor, context_);
+        const FieldDescriptor* descriptor) const
+{
+    return new ImmutableExtensionGenerator(descriptor, context_);
 }
 
 ServiceGenerator* ImmutableGeneratorFactory::NewServiceGenerator(
-    const ServiceDescriptor* descriptor) const {
-  return new ImmutableServiceGenerator(descriptor, context_);
+        const ServiceDescriptor* descriptor) const
+{
+    return new ImmutableServiceGenerator(descriptor, context_);
 }
 
 
-}  // namespace java
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace java
+} // namespace compiler
+} // namespace protobuf
+} // namespace google

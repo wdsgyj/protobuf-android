@@ -37,10 +37,18 @@
 namespace google {
 namespace protobuf {
 
-Service::~Service() {}
-RpcChannel::~RpcChannel() {}
-RpcController::~RpcController() {}
+Service::~Service()
+{
+}
 
-}  // namespace protobuf
+RpcChannel::~RpcChannel()
+{
+}
 
-}  // namespace google
+RpcController::~RpcController()
+{
+}
+
+} // namespace protobuf
+
+} // namespace google

@@ -68,69 +68,73 @@ namespace internal {
 // if we haven't been initialized yet, we're probably single threaded, and our
 // default values should hopefully be pretty safe.
 struct AtomicOps_x86CPUFeatureStruct AtomicOps_Internalx86CPUFeatures = {
-  false,          // bug can't exist before process spawns multiple threads
-  false,          // no SSE2
+    false, // bug can't exist before process spawns multiple threads
+    false, // no SSE2
 };
 
 namespace {
 
 // Initialize the AtomicOps_Internalx86CPUFeatures struct.
-void AtomicOps_Internalx86CPUFeaturesInit() {
-  uint32_t eax;
-  uint32_t ebx;
-  uint32_t ecx;
-  uint32_t edx;
 
-  // Get vendor string (issue CPUID with eax = 0)
-  cpuid(eax, ebx, ecx, edx, 0);
-  char vendor[13];
-  memcpy(vendor, &ebx, 4);
-  memcpy(vendor + 4, &edx, 4);
-  memcpy(vendor + 8, &ecx, 4);
-  vendor[12] = 0;
+void AtomicOps_Internalx86CPUFeaturesInit()
+{
+    uint32_t eax;
+    uint32_t ebx;
+    uint32_t ecx;
+    uint32_t edx;
 
-  // get feature flags in ecx/edx, and family/model in eax
-  cpuid(eax, ebx, ecx, edx, 1);
+    // Get vendor string (issue CPUID with eax = 0)
+    cpuid(eax, ebx, ecx, edx, 0);
+    char vendor[13];
+    memcpy(vendor, &ebx, 4);
+    memcpy(vendor + 4, &edx, 4);
+    memcpy(vendor + 8, &ecx, 4);
+    vendor[12] = 0;
 
-  int family = (eax >> 8) & 0xf;        // family and model fields
-  int model = (eax >> 4) & 0xf;
-  if (family == 0xf) {                  // use extended family and model fields
-    family += (eax >> 20) & 0xff;
-    model += ((eax >> 16) & 0xf) << 4;
-  }
+    // get feature flags in ecx/edx, and family/model in eax
+    cpuid(eax, ebx, ecx, edx, 1);
 
-  // Opteron Rev E has a bug in which on very rare occasions a locked
-  // instruction doesn't act as a read-acquire barrier if followed by a
-  // non-locked read-modify-write instruction.  Rev F has this bug in
-  // pre-release versions, but not in versions released to customers,
-  // so we test only for Rev E, which is family 15, model 32..63 inclusive.
-  if (strcmp(vendor, "AuthenticAMD") == 0 &&       // AMD
-      family == 15 &&
-      32 <= model && model <= 63) {
-    AtomicOps_Internalx86CPUFeatures.has_amd_lock_mb_bug = true;
-  } else {
-    AtomicOps_Internalx86CPUFeatures.has_amd_lock_mb_bug = false;
-  }
+    int family = (eax >> 8) & 0xf; // family and model fields
+    int model = (eax >> 4) & 0xf;
+    if (family == 0xf) { // use extended family and model fields
+        family += (eax >> 20) & 0xff;
+        model += ((eax >> 16) & 0xf) << 4;
+    }
 
-  // edx bit 26 is SSE2 which we use to tell use whether we can use mfence
-  AtomicOps_Internalx86CPUFeatures.has_sse2 = ((edx >> 26) & 1);
+    // Opteron Rev E has a bug in which on very rare occasions a locked
+    // instruction doesn't act as a read-acquire barrier if followed by a
+    // non-locked read-modify-write instruction.  Rev F has this bug in
+    // pre-release versions, but not in versions released to customers,
+    // so we test only for Rev E, which is family 15, model 32..63 inclusive.
+    if (strcmp(vendor, "AuthenticAMD") == 0 && // AMD
+            family == 15 &&
+            32 <= model && model <= 63) {
+        AtomicOps_Internalx86CPUFeatures.has_amd_lock_mb_bug = true;
+    } else {
+        AtomicOps_Internalx86CPUFeatures.has_amd_lock_mb_bug = false;
+    }
+
+    // edx bit 26 is SSE2 which we use to tell use whether we can use mfence
+    AtomicOps_Internalx86CPUFeatures.has_sse2 = ((edx >> 26) & 1);
 }
 
 class AtomicOpsx86Initializer {
- public:
-  AtomicOpsx86Initializer() {
-    AtomicOps_Internalx86CPUFeaturesInit();
-  }
+public:
+
+    AtomicOpsx86Initializer()
+    {
+        AtomicOps_Internalx86CPUFeaturesInit();
+    }
 };
 
 // A global to get use initialized on startup via static initialization :/
 AtomicOpsx86Initializer g_initer;
 
-}  // namespace
+} // namespace
 
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+} // namespace internal
+} // namespace protobuf
+} // namespace google
 
 #endif  // __i386__
 

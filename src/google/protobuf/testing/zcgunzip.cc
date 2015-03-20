@@ -51,23 +51,24 @@
 using google::protobuf::io::FileInputStream;
 using google::protobuf::io::GzipInputStream;
 
-int main(int argc, const char** argv) {
-  FileInputStream fin(STDIN_FILENO);
-  GzipInputStream in(&fin);
+int main(int argc, const char** argv)
+{
+    FileInputStream fin(STDIN_FILENO);
+    GzipInputStream in(&fin);
 
-  while (true) {
-    const void* inptr;
-    int inlen;
-    bool ok;
-    ok = in.Next(&inptr, &inlen);
-    if (!ok) {
-      break;
+    while (true) {
+        const void* inptr;
+        int inlen;
+        bool ok;
+        ok = in.Next(&inptr, &inlen);
+        if (!ok) {
+            break;
+        }
+        if (inlen > 0) {
+            int err = write(STDOUT_FILENO, inptr, inlen);
+            assert(err == inlen);
+        }
     }
-    if (inlen > 0) {
-      int err = write(STDOUT_FILENO, inptr, inlen);
-      assert(err == inlen);
-    }
-  }
 
-  return 0;
+    return 0;
 }

@@ -37,5 +37,5 @@ namespace protobuf {
 
 // Nothing needed here right now.
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google

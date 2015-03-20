@@ -76,27 +76,28 @@ static const LogLevel WARNING = LOGLEVEL_WARNING;
 //   }  // destructor unregisters object as a log sink
 // This is a dummy implementation which covers only what is used by protocol
 // buffer unit tests.
+
 class ScopedMemoryLog {
- public:
-  ScopedMemoryLog();
-  virtual ~ScopedMemoryLog();
+public:
+    ScopedMemoryLog();
+    virtual ~ScopedMemoryLog();
 
-  // Fetches all messages with the given severity level.
-  const vector<string>& GetMessages(LogLevel error);
+    // Fetches all messages with the given severity level.
+    const vector<string>& GetMessages(LogLevel error);
 
- private:
-  map<LogLevel, vector<string> > messages_;
-  LogHandler* old_handler_;
+private:
+    map<LogLevel, vector<string> > messages_;
+    LogHandler* old_handler_;
 
-  static void HandleLog(LogLevel level, const char* filename, int line,
-                        const string& message);
+    static void HandleLog(LogLevel level, const char* filename, int line,
+            const string& message);
 
-  static ScopedMemoryLog* active_log_;
+    static ScopedMemoryLog* active_log_;
 
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ScopedMemoryLog);
+    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ScopedMemoryLog);
 };
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google
 
 #endif  // GOOGLE_PROTOBUF_GOOGLETEST_H__

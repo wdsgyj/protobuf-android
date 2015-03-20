@@ -45,54 +45,54 @@ namespace compiler {
 namespace javanano {
 
 class MessageFieldGenerator : public FieldGenerator {
- public:
-  explicit MessageFieldGenerator(
-      const FieldDescriptor* descriptor, const Params& params);
-  ~MessageFieldGenerator();
+public:
+    explicit MessageFieldGenerator(
+            const FieldDescriptor* descriptor, const Params& params);
+    ~MessageFieldGenerator();
 
-  // implements FieldGenerator ---------------------------------------
-  void GenerateMembers(io::Printer* printer, bool lazy_init) const;
-  void GenerateClearCode(io::Printer* printer) const;
-  void GenerateMergingCode(io::Printer* printer) const;
-  void GenerateSerializationCode(io::Printer* printer) const;
-  void GenerateSerializedSizeCode(io::Printer* printer) const;
-  void GenerateEqualsCode(io::Printer* printer) const;
-  void GenerateHashCodeCode(io::Printer* printer) const;
-  void GenerateFixClonedCode(io::Printer* printer) const;
+    // implements FieldGenerator ---------------------------------------
+    void GenerateMembers(io::Printer* printer, bool lazy_init) const;
+    void GenerateClearCode(io::Printer* printer) const;
+    void GenerateMergingCode(io::Printer* printer) const;
+    void GenerateSerializationCode(io::Printer* printer) const;
+    void GenerateSerializedSizeCode(io::Printer* printer) const;
+    void GenerateEqualsCode(io::Printer* printer) const;
+    void GenerateHashCodeCode(io::Printer* printer) const;
+    void GenerateFixClonedCode(io::Printer* printer) const;
 
- private:
-  const FieldDescriptor* descriptor_;
-  map<string, string> variables_;
+private:
+    const FieldDescriptor* descriptor_;
+    map<string, string> variables_;
 
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageFieldGenerator);
+    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageFieldGenerator);
 };
 
 class RepeatedMessageFieldGenerator : public FieldGenerator {
- public:
-  explicit RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor,
-        const Params& params);
-  ~RepeatedMessageFieldGenerator();
+public:
+    explicit RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor,
+            const Params& params);
+    ~RepeatedMessageFieldGenerator();
 
-  // implements FieldGenerator ---------------------------------------
-  void GenerateMembers(io::Printer* printer, bool lazy_init) const;
-  void GenerateClearCode(io::Printer* printer) const;
-  void GenerateMergingCode(io::Printer* printer) const;
-  void GenerateSerializationCode(io::Printer* printer) const;
-  void GenerateSerializedSizeCode(io::Printer* printer) const;
-  void GenerateEqualsCode(io::Printer* printer) const;
-  void GenerateHashCodeCode(io::Printer* printer) const;
-  void GenerateFixClonedCode(io::Printer* printer) const;
+    // implements FieldGenerator ---------------------------------------
+    void GenerateMembers(io::Printer* printer, bool lazy_init) const;
+    void GenerateClearCode(io::Printer* printer) const;
+    void GenerateMergingCode(io::Printer* printer) const;
+    void GenerateSerializationCode(io::Printer* printer) const;
+    void GenerateSerializedSizeCode(io::Printer* printer) const;
+    void GenerateEqualsCode(io::Printer* printer) const;
+    void GenerateHashCodeCode(io::Printer* printer) const;
+    void GenerateFixClonedCode(io::Printer* printer) const;
 
- private:
-  const FieldDescriptor* descriptor_;
-  map<string, string> variables_;
+private:
+    const FieldDescriptor* descriptor_;
+    map<string, string> variables_;
 
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedMessageFieldGenerator);
+    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedMessageFieldGenerator);
 };
 
-}  // namespace javanano
-}  // namespace compiler
-}  // namespace protobuf
+} // namespace javanano
+} // namespace compiler
+} // namespace protobuf
 
-}  // namespace google
+} // namespace google
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_FIELD_H__

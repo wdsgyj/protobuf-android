@@ -87,7 +87,7 @@ string JavaPackageToDir(string package_name);
 // TODO(xiaofeng): this method is deprecated and should be removed in the
 // future.
 string ToJavaName(const string& full_name,
-                  const FileDescriptor* file);
+        const FileDescriptor* file);
 
 // TODO(xiaofeng): the following methods are kept for they are exposed
 // publicly in //google/protobuf/compiler/java/names.h. They return
@@ -115,15 +115,19 @@ string ExtraMessageOrBuilderInterfaces(const Descriptor* descriptor);
 
 // Get the unqualified Java class name for mutable messages. i.e. without
 // package or outer classnames.
-inline string ShortMutableJavaClassName(const Descriptor* descriptor) {
-  return descriptor->name();
+
+inline string ShortMutableJavaClassName(const Descriptor* descriptor)
+{
+    return descriptor->name();
 }
 
 
 // Whether we should generate multiple java files for messages.
+
 inline bool MultipleJavaFiles(
-    const FileDescriptor* descriptor, bool immutable) {
-  return descriptor->options().java_multiple_files();
+        const FileDescriptor* descriptor, bool immutable)
+{
+    return descriptor->options().java_multiple_files();
 }
 
 // Get the unqualified name that should be used for a field's field
@@ -136,15 +140,15 @@ string FieldConstantName(const FieldDescriptor *field);
 FieldDescriptor::Type GetType(const FieldDescriptor* field);
 
 enum JavaType {
-  JAVATYPE_INT,
-  JAVATYPE_LONG,
-  JAVATYPE_FLOAT,
-  JAVATYPE_DOUBLE,
-  JAVATYPE_BOOLEAN,
-  JAVATYPE_STRING,
-  JAVATYPE_BYTES,
-  JAVATYPE_ENUM,
-  JAVATYPE_MESSAGE
+    JAVATYPE_INT,
+    JAVATYPE_LONG,
+    JAVATYPE_FLOAT,
+    JAVATYPE_DOUBLE,
+    JAVATYPE_BOOLEAN,
+    JAVATYPE_STRING,
+    JAVATYPE_BYTES,
+    JAVATYPE_ENUM,
+    JAVATYPE_MESSAGE
 };
 
 JavaType GetJavaType(const FieldDescriptor* field);
@@ -161,67 +165,85 @@ const char* FieldTypeName(const FieldDescriptor::Type field_type);
 
 class ClassNameResolver;
 string DefaultValue(const FieldDescriptor* field, bool immutable,
-                    ClassNameResolver* name_resolver);
+        ClassNameResolver* name_resolver);
+
 inline string ImmutableDefaultValue(const FieldDescriptor* field,
-                                    ClassNameResolver* name_resolver) {
-  return DefaultValue(field, true, name_resolver);
+        ClassNameResolver* name_resolver)
+{
+    return DefaultValue(field, true, name_resolver);
 }
 bool IsDefaultValueJavaDefault(const FieldDescriptor* field);
 
 // Does this message class use UnknownFieldSet?
 // Otherwise, unknown fields will be stored in a ByteString object
-inline bool UseUnknownFieldSet(const Descriptor* descriptor) {
-  return descriptor->file()->options().optimize_for() !=
-           FileOptions::LITE_RUNTIME;
+
+inline bool UseUnknownFieldSet(const Descriptor* descriptor)
+{
+    return descriptor->file()->options().optimize_for() !=
+            FileOptions::LITE_RUNTIME;
 }
 
 // Does this message class have generated parsing, serialization, and other
 // standard methods for which reflection-based fallback implementations exist?
-inline bool HasGeneratedMethods(const Descriptor* descriptor) {
-  return descriptor->file()->options().optimize_for() !=
-           FileOptions::CODE_SIZE;
+
+inline bool HasGeneratedMethods(const Descriptor* descriptor)
+{
+    return descriptor->file()->options().optimize_for() !=
+            FileOptions::CODE_SIZE;
 }
 
 // Does this message have specialized equals() and hashCode() methods?
-inline bool HasEqualsAndHashCode(const Descriptor* descriptor) {
-  return descriptor->file()->options().java_generate_equals_and_hash();
+
+inline bool HasEqualsAndHashCode(const Descriptor* descriptor)
+{
+    return descriptor->file()->options().java_generate_equals_and_hash();
 }
 
 // Does this message class have descriptor and reflection methods?
-inline bool HasDescriptorMethods(const Descriptor* descriptor) {
-  return descriptor->file()->options().optimize_for() !=
-           FileOptions::LITE_RUNTIME;
-}
-inline bool HasDescriptorMethods(const EnumDescriptor* descriptor) {
-  return descriptor->file()->options().optimize_for() !=
-           FileOptions::LITE_RUNTIME;
-}
-inline bool HasDescriptorMethods(const FileDescriptor* descriptor) {
-  return descriptor->options().optimize_for() !=
-           FileOptions::LITE_RUNTIME;
+
+inline bool HasDescriptorMethods(const Descriptor* descriptor)
+{
+    return descriptor->file()->options().optimize_for() !=
+            FileOptions::LITE_RUNTIME;
 }
 
-inline bool HasNestedBuilders(const Descriptor* descriptor) {
-  // The proto-lite version doesn't support nested builders.
-  return descriptor->file()->options().optimize_for() !=
-           FileOptions::LITE_RUNTIME;
+inline bool HasDescriptorMethods(const EnumDescriptor* descriptor)
+{
+    return descriptor->file()->options().optimize_for() !=
+            FileOptions::LITE_RUNTIME;
+}
+
+inline bool HasDescriptorMethods(const FileDescriptor* descriptor)
+{
+    return descriptor->options().optimize_for() !=
+            FileOptions::LITE_RUNTIME;
+}
+
+inline bool HasNestedBuilders(const Descriptor* descriptor)
+{
+    // The proto-lite version doesn't support nested builders.
+    return descriptor->file()->options().optimize_for() !=
+            FileOptions::LITE_RUNTIME;
 }
 
 // Should we generate generic services for this file?
-inline bool HasGenericServices(const FileDescriptor *file) {
-  return file->service_count() > 0 &&
-         file->options().optimize_for() != FileOptions::LITE_RUNTIME &&
-         file->options().java_generic_services();
+
+inline bool HasGenericServices(const FileDescriptor *file)
+{
+    return file->service_count() > 0 &&
+            file->options().optimize_for() != FileOptions::LITE_RUNTIME &&
+            file->options().java_generic_services();
 }
 
-inline bool IsLazy(const FieldDescriptor* descriptor) {
-  // Currently, the proto-lite version suports lazy field.
-  // TODO(niwasaki): Support lazy fields also for other proto runtimes.
-  if (descriptor->file()->options().optimize_for() !=
-      FileOptions::LITE_RUNTIME) {
-    return false;
-  }
-  return descriptor->options().lazy();
+inline bool IsLazy(const FieldDescriptor* descriptor)
+{
+    // Currently, the proto-lite version suports lazy field.
+    // TODO(niwasaki): Support lazy fields also for other proto runtimes.
+    if (descriptor->file()->options().optimize_for() !=
+            FileOptions::LITE_RUNTIME) {
+        return false;
+    }
+    return descriptor->options().lazy();
 }
 
 // Methods for shared bitfields.
@@ -284,18 +306,23 @@ const char* GetCapitalizedType(const FieldDescriptor* field, bool immutable);
 int FixedSize(FieldDescriptor::Type type);
 
 // Comparators used to sort fields in MessageGenerator
+
 struct FieldOrderingByNumber {
-  inline bool operator()(const FieldDescriptor* a,
-                         const FieldDescriptor* b) const {
-    return a->number() < b->number();
-  }
+
+    inline bool operator()(const FieldDescriptor* a,
+            const FieldDescriptor* b) const
+    {
+        return a->number() < b->number();
+    }
 };
 
 struct ExtensionRangeOrdering {
-  bool operator()(const Descriptor::ExtensionRange* a,
-                  const Descriptor::ExtensionRange* b) const {
-    return a->start < b->start;
-  }
+
+    bool operator()(const Descriptor::ExtensionRange* a,
+            const Descriptor::ExtensionRange* b) const
+    {
+        return a->start < b->start;
+    }
 };
 
 // Sort the fields of the given Descriptor by number into a new[]'d array
@@ -307,16 +334,18 @@ const FieldDescriptor** SortFieldsByNumber(const Descriptor* descriptor);
 bool HasRequiredFields(const Descriptor* descriptor);
 
 // Whether a .proto file supports field presence test for non-message types.
-inline bool SupportFieldPresence(const FileDescriptor* descriptor) {
-  return true;
+
+inline bool SupportFieldPresence(const FileDescriptor* descriptor)
+{
+    return true;
 }
 
 // Check whether a mesasge has repeated fields.
 bool HasRepeatedFields(const Descriptor* descriptor);
 
-}  // namespace java
-}  // namespace compiler
-}  // namespace protobuf
+} // namespace java
+} // namespace compiler
+} // namespace protobuf
 
-}  // namespace google
+} // namespace google
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_HELPERS_H__

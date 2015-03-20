@@ -75,14 +75,16 @@ LIBPROTOBUF_EXPORT extern const ::std::string* empty_string_;
 LIBPROTOBUF_EXPORT extern ProtobufOnceType empty_string_once_init_;
 LIBPROTOBUF_EXPORT void InitEmptyString();
 
-
-LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyStringAlreadyInited() {
-  assert(empty_string_ != NULL);
-  return *empty_string_;
+LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyStringAlreadyInited()
+{
+    assert(empty_string_ != NULL);
+    return *empty_string_;
 }
-LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyString() {
-  ::google::protobuf::GoogleOnceInit(&empty_string_once_init_, &InitEmptyString);
-  return GetEmptyStringAlreadyInited();
+
+LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyString()
+{
+    ::google::protobuf::GoogleOnceInit(&empty_string_once_init_, &InitEmptyString);
+    return GetEmptyStringAlreadyInited();
 }
 
 // Defined in generated_message_reflection.cc -- not actually part of the lite
@@ -99,15 +101,17 @@ LIBPROTOBUF_EXPORT int StringSpaceUsedExcludingSelf(const string& str);
 // helper here to keep the protobuf compiler from ever having to emit loops in
 // IsInitialized() methods.  We want the C++ compiler to inline this or not
 // as it sees fit.
-template <class Type> bool AllAreInitialized(const Type& t) {
-  for (int i = t.size(); --i >= 0; ) {
-    if (!t.Get(i).IsInitialized()) return false;
-  }
-  return true;
+
+template <class Type> bool AllAreInitialized(const Type& t)
+{
+    for (int i = t.size(); --i >= 0;) {
+        if (!t.Get(i).IsInitialized()) return false;
+    }
+    return true;
 }
 
-}  // namespace internal
-}  // namespace protobuf
+} // namespace internal
+} // namespace protobuf
 
-}  // namespace google
+} // namespace google
 #endif  // GOOGLE_PROTOBUF_GENERATED_MESSAGE_UTIL_H__

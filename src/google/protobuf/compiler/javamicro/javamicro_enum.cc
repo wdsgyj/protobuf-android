@@ -48,49 +48,53 @@ namespace compiler {
 namespace javamicro {
 
 EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor, const Params& params)
-  : params_(params), descriptor_(descriptor) {
-  for (int i = 0; i < descriptor_->value_count(); i++) {
-    const EnumValueDescriptor* value = descriptor_->value(i);
-    const EnumValueDescriptor* canonical_value =
-      descriptor_->FindValueByNumber(value->number());
+: params_(params), descriptor_(descriptor)
+{
+    for (int i = 0; i < descriptor_->value_count(); i++) {
+        const EnumValueDescriptor* value = descriptor_->value(i);
+        const EnumValueDescriptor* canonical_value =
+                descriptor_->FindValueByNumber(value->number());
 
-    if (value == canonical_value) {
-      canonical_values_.push_back(value);
-    } else {
-      Alias alias;
-      alias.value = value;
-      alias.canonical_value = canonical_value;
-      aliases_.push_back(alias);
+        if (value == canonical_value) {
+            canonical_values_.push_back(value);
+        } else {
+            Alias alias;
+            alias.value = value;
+            alias.canonical_value = canonical_value;
+            aliases_.push_back(alias);
+        }
     }
-  }
 }
 
-EnumGenerator::~EnumGenerator() {}
-
-void EnumGenerator::Generate(io::Printer* printer) {
-  printer->Print("// enum $classname$\n", "classname", descriptor_->name());
-  for (int i = 0; i < canonical_values_.size(); i++) {
-    map<string, string> vars;
-    vars["name"] = canonical_values_[i]->name();
-    vars["canonical_value"] = SimpleItoa(canonical_values_[i]->number());
-    printer->Print(vars,
-      "public static final int $name$ = $canonical_value$;\n");
-  }
-
-  // -----------------------------------------------------------------
-
-  for (int i = 0; i < aliases_.size(); i++) {
-    map<string, string> vars;
-    vars["name"] = aliases_[i].value->name();
-    vars["canonical_name"] = aliases_[i].canonical_value->name();
-    printer->Print(vars,
-      "public static final int $name$ = $canonical_name$;\n");
-  }
-
-  printer->Print("\n");
+EnumGenerator::~EnumGenerator()
+{
 }
 
-}  // namespace javamicro
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+void EnumGenerator::Generate(io::Printer* printer)
+{
+    printer->Print("// enum $classname$\n", "classname", descriptor_->name());
+    for (int i = 0; i < canonical_values_.size(); i++) {
+        map<string, string> vars;
+        vars["name"] = canonical_values_[i]->name();
+        vars["canonical_value"] = SimpleItoa(canonical_values_[i]->number());
+        printer->Print(vars,
+                "public static final int $name$ = $canonical_value$;\n");
+    }
+
+    // -----------------------------------------------------------------
+
+    for (int i = 0; i < aliases_.size(); i++) {
+        map<string, string> vars;
+        vars["name"] = aliases_[i].value->name();
+        vars["canonical_name"] = aliases_[i].canonical_value->name();
+        printer->Print(vars,
+                "public static final int $name$ = $canonical_name$;\n");
+    }
+
+    printer->Print("\n");
+}
+
+} // namespace javamicro
+} // namespace compiler
+} // namespace protobuf
+} // namespace google

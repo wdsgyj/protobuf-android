@@ -50,109 +50,114 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
-
-JavaGenerator::JavaGenerator() {}
-JavaGenerator::~JavaGenerator() {}
-
-bool JavaGenerator::Generate(const FileDescriptor* file,
-                             const string& parameter,
-                             GeneratorContext* context,
-                             string* error) const {
-  // -----------------------------------------------------------------
-  // parse generator options
-
-  // Name a file where we will write a list of generated file names, one
-  // per line.
-  string output_list_file;
-
-
-  vector<pair<string, string> > options;
-  ParseGeneratorParameter(parameter, &options);
-
-  bool generate_immutable_code = false;
-  bool generate_mutable_code = false;
-  bool generate_shared_code = false;
-  for (int i = 0; i < options.size(); i++) {
-    if (options[i].first == "output_list_file") {
-      output_list_file = options[i].second;
-    } else if (options[i].first == "immutable") {
-      generate_immutable_code = true;
-    } else if (options[i].first == "mutable") {
-      generate_mutable_code = true;
-    } else if (options[i].first == "shared") {
-      generate_shared_code = true;
-    } else {
-      *error = "Unknown generator option: " + options[i].first;
-      return false;
-    }
-  }
-
-  // By default we generate immutable code and shared code for immutable API.
-  if (!generate_immutable_code && !generate_mutable_code &&
-      !generate_shared_code) {
-    generate_immutable_code = true;
-    generate_shared_code = true;
-  }
-
-  // -----------------------------------------------------------------
-
-
-  vector<string> all_files;
-
-  vector<FileGenerator*> file_generators;
-  if (generate_immutable_code) {
-    file_generators.push_back(new FileGenerator(file, /* immutable = */ true));
-  }
-  for (int i = 0; i < file_generators.size(); ++i) {
-    if (!file_generators[i]->Validate(error)) {
-      for (int j = 0; j < file_generators.size(); ++j) {
-        delete file_generators[j];
-      }
-      return false;
-    }
-  }
-
-  for (int i = 0; i < file_generators.size(); ++i) {
-    FileGenerator* file_generator = file_generators[i];
-
-    string package_dir = JavaPackageToDir(file_generator->java_package());
-
-    string java_filename = package_dir;
-    java_filename += file_generator->classname();
-    java_filename += ".java";
-    all_files.push_back(java_filename);
-
-    // Generate main java file.
-    scoped_ptr<io::ZeroCopyOutputStream> output(
-        context->Open(java_filename));
-    io::Printer printer(output.get(), '$');
-    file_generator->Generate(&printer);
-
-    // Generate sibling files.
-    file_generator->GenerateSiblings(package_dir, context, &all_files);
-  }
-
-  for (int i = 0; i < file_generators.size(); ++i) {
-    delete file_generators[i];
-  }
-  file_generators.clear();
-
-  // Generate output list if requested.
-  if (!output_list_file.empty()) {
-    // Generate output list.  This is just a simple text file placed in a
-    // deterministic location which lists the .java files being generated.
-    scoped_ptr<io::ZeroCopyOutputStream> srclist_raw_output(
-        context->Open(output_list_file));
-    io::Printer srclist_printer(srclist_raw_output.get(), '$');
-    for (int i = 0; i < all_files.size(); i++) {
-      srclist_printer.Print("$filename$\n", "filename", all_files[i]);
-    }
-  }
-
-  return true;
+JavaGenerator::JavaGenerator()
+{
 }
 
-}  // namespace java
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+JavaGenerator::~JavaGenerator()
+{
+}
+
+bool JavaGenerator::Generate(const FileDescriptor* file,
+        const string& parameter,
+        GeneratorContext* context,
+        string* error) const
+{
+    // -----------------------------------------------------------------
+    // parse generator options
+
+    // Name a file where we will write a list of generated file names, one
+    // per line.
+    string output_list_file;
+
+
+    vector<pair<string, string> > options;
+    ParseGeneratorParameter(parameter, &options);
+
+    bool generate_immutable_code = false;
+    bool generate_mutable_code = false;
+    bool generate_shared_code = false;
+    for (int i = 0; i < options.size(); i++) {
+        if (options[i].first == "output_list_file") {
+            output_list_file = options[i].second;
+        } else if (options[i].first == "immutable") {
+            generate_immutable_code = true;
+        } else if (options[i].first == "mutable") {
+            generate_mutable_code = true;
+        } else if (options[i].first == "shared") {
+            generate_shared_code = true;
+        } else {
+            *error = "Unknown generator option: " + options[i].first;
+            return false;
+        }
+    }
+
+    // By default we generate immutable code and shared code for immutable API.
+    if (!generate_immutable_code && !generate_mutable_code &&
+            !generate_shared_code) {
+        generate_immutable_code = true;
+        generate_shared_code = true;
+    }
+
+    // -----------------------------------------------------------------
+
+
+    vector<string> all_files;
+
+    vector<FileGenerator*> file_generators;
+    if (generate_immutable_code) {
+        file_generators.push_back(new FileGenerator(file, /* immutable = */ true));
+    }
+    for (int i = 0; i < file_generators.size(); ++i) {
+        if (!file_generators[i]->Validate(error)) {
+            for (int j = 0; j < file_generators.size(); ++j) {
+                delete file_generators[j];
+            }
+            return false;
+        }
+    }
+
+    for (int i = 0; i < file_generators.size(); ++i) {
+        FileGenerator* file_generator = file_generators[i];
+
+        string package_dir = JavaPackageToDir(file_generator->java_package());
+
+        string java_filename = package_dir;
+        java_filename += file_generator->classname();
+        java_filename += ".java";
+        all_files.push_back(java_filename);
+
+        // Generate main java file.
+        scoped_ptr<io::ZeroCopyOutputStream> output(
+                context->Open(java_filename));
+        io::Printer printer(output.get(), '$');
+        file_generator->Generate(&printer);
+
+        // Generate sibling files.
+        file_generator->GenerateSiblings(package_dir, context, &all_files);
+    }
+
+    for (int i = 0; i < file_generators.size(); ++i) {
+        delete file_generators[i];
+    }
+    file_generators.clear();
+
+    // Generate output list if requested.
+    if (!output_list_file.empty()) {
+        // Generate output list.  This is just a simple text file placed in a
+        // deterministic location which lists the .java files being generated.
+        scoped_ptr<io::ZeroCopyOutputStream> srclist_raw_output(
+                context->Open(output_list_file));
+        io::Printer srclist_printer(srclist_raw_output.get(), '$');
+        for (int i = 0; i < all_files.size(); i++) {
+            srclist_printer.Print("$filename$\n", "filename", all_files[i]);
+        }
+    }
+
+    return true;
+}
+
+} // namespace java
+} // namespace compiler
+} // namespace protobuf
+} // namespace google

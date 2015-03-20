@@ -65,94 +65,110 @@ namespace cpp {
 namespace {
 
 class MockErrorCollector : public MultiFileErrorCollector {
- public:
-  MockErrorCollector() {}
-  ~MockErrorCollector() {}
+public:
 
-  string text_;
+    MockErrorCollector()
+    {
+    }
 
-  // implements ErrorCollector ---------------------------------------
-  void AddError(const string& filename, int line, int column,
-                const string& message) {
-    strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n",
-                                 filename, line, column, message);
-  }
+    ~MockErrorCollector()
+    {
+    }
+
+    string text_;
+
+    // implements ErrorCollector ---------------------------------------
+
+    void AddError(const string& filename, int line, int column,
+            const string& message)
+    {
+        strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n",
+                filename, line, column, message);
+    }
 };
 
 class MockGeneratorContext : public GeneratorContext {
- public:
-  MockGeneratorContext() {}
-  ~MockGeneratorContext() {
-    STLDeleteValues(&files_);
-  }
+public:
 
-  void ExpectFileMatches(const string& virtual_filename,
-                         const string& physical_filename) {
-    string* expected_contents = FindPtrOrNull(files_, virtual_filename);
-    ASSERT_TRUE(expected_contents != NULL)
-      << "Generator failed to generate file: " << virtual_filename;
+    MockGeneratorContext()
+    {
+    }
 
-    string actual_contents;
-    GOOGLE_CHECK_OK(
-        File::GetContents(TestSourceDir() + "/" + physical_filename,
-                          &actual_contents, true));
-    EXPECT_TRUE(actual_contents == *expected_contents)
-      << physical_filename << " needs to be regenerated.  Please run "
-         "generate_descriptor_proto.sh and add this file "
-         "to your CL.";
-  }
+    ~MockGeneratorContext()
+    {
+        STLDeleteValues(&files_);
+    }
 
-  // implements GeneratorContext --------------------------------------
+    void ExpectFileMatches(const string& virtual_filename,
+            const string& physical_filename)
+    {
+        string* expected_contents = FindPtrOrNull(files_, virtual_filename);
+        ASSERT_TRUE(expected_contents != NULL)
+                << "Generator failed to generate file: " << virtual_filename;
 
-  virtual io::ZeroCopyOutputStream* Open(const string& filename) {
-    string** map_slot = &files_[filename];
-    if (*map_slot != NULL) delete *map_slot;
-    *map_slot = new string;
+        string actual_contents;
+        GOOGLE_CHECK_OK(
+                File::GetContents(TestSourceDir() + "/" + physical_filename,
+                &actual_contents, true));
+        EXPECT_TRUE(actual_contents == *expected_contents)
+                << physical_filename << " needs to be regenerated.  Please run "
+                "generate_descriptor_proto.sh and add this file "
+                "to your CL.";
+    }
 
-    return new io::StringOutputStream(*map_slot);
-  }
+    // implements GeneratorContext --------------------------------------
 
- private:
-  map<string, string*> files_;
+    virtual io::ZeroCopyOutputStream* Open(const string& filename)
+    {
+        string** map_slot = &files_[filename];
+        if (*map_slot != NULL) delete *map_slot;
+        *map_slot = new string;
+
+        return new io::StringOutputStream(*map_slot);
+    }
+
+private:
+    map<string, string*> files_;
 };
 
-TEST(BootstrapTest, GeneratedDescriptorMatches) {
-  MockErrorCollector error_collector;
-  DiskSourceTree source_tree;
-  source_tree.MapPath("", TestSourceDir());
-  Importer importer(&source_tree, &error_collector);
-  const FileDescriptor* proto_file =
-    importer.Import("google/protobuf/descriptor.proto");
-  const FileDescriptor* plugin_proto_file =
-    importer.Import("google/protobuf/compiler/plugin.proto");
-  EXPECT_EQ("", error_collector.text_);
-  ASSERT_TRUE(proto_file != NULL);
-  ASSERT_TRUE(plugin_proto_file != NULL);
+TEST(BootstrapTest, GeneratedDescriptorMatches)
+{
+    MockErrorCollector error_collector;
+    DiskSourceTree source_tree;
+    source_tree.MapPath("", TestSourceDir());
+    Importer importer(&source_tree, &error_collector);
+    const FileDescriptor* proto_file =
+            importer.Import("google/protobuf/descriptor.proto");
+    const FileDescriptor* plugin_proto_file =
+            importer.Import("google/protobuf/compiler/plugin.proto");
+    EXPECT_EQ("", error_collector.text_);
+    ASSERT_TRUE(proto_file != NULL);
+    ASSERT_TRUE(plugin_proto_file != NULL);
 
-  CppGenerator generator;
-  MockGeneratorContext context;
-  string error;
-  string parameter;
-  parameter = "dllexport_decl=LIBPROTOBUF_EXPORT";
-  ASSERT_TRUE(generator.Generate(proto_file, parameter,
-                                 &context, &error));
-  parameter = "dllexport_decl=LIBPROTOC_EXPORT";
-  ASSERT_TRUE(generator.Generate(plugin_proto_file, parameter,
-                                 &context, &error));
+    CppGenerator generator;
+    MockGeneratorContext context;
+    string error;
+    string parameter;
+    parameter = "dllexport_decl=LIBPROTOBUF_EXPORT";
+    ASSERT_TRUE(generator.Generate(proto_file, parameter,
+            &context, &error));
+    parameter = "dllexport_decl=LIBPROTOC_EXPORT";
+    ASSERT_TRUE(generator.Generate(plugin_proto_file, parameter,
+            &context, &error));
 
-  context.ExpectFileMatches("google/protobuf/descriptor.pb.h",
-                            "google/protobuf/descriptor.pb.h");
-  context.ExpectFileMatches("google/protobuf/descriptor.pb.cc",
-                            "google/protobuf/descriptor.pb.cc");
-  context.ExpectFileMatches("google/protobuf/compiler/plugin.pb.h",
-                            "google/protobuf/compiler/plugin.pb.h");
-  context.ExpectFileMatches("google/protobuf/compiler/plugin.pb.cc",
-                            "google/protobuf/compiler/plugin.pb.cc");
+    context.ExpectFileMatches("google/protobuf/descriptor.pb.h",
+            "google/protobuf/descriptor.pb.h");
+    context.ExpectFileMatches("google/protobuf/descriptor.pb.cc",
+            "google/protobuf/descriptor.pb.cc");
+    context.ExpectFileMatches("google/protobuf/compiler/plugin.pb.h",
+            "google/protobuf/compiler/plugin.pb.h");
+    context.ExpectFileMatches("google/protobuf/compiler/plugin.pb.cc",
+            "google/protobuf/compiler/plugin.pb.cc");
 }
 
-}  // namespace
+} // namespace
 
-}  // namespace cpp
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace cpp
+} // namespace compiler
+} // namespace protobuf
+} // namespace google

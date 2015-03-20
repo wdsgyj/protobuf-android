@@ -44,190 +44,200 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
-string EscapeJavadoc(const string& input) {
-  string result;
-  result.reserve(input.size() * 2);
+string EscapeJavadoc(const string& input)
+{
+    string result;
+    result.reserve(input.size() * 2);
 
-  char prev = '*';
+    char prev = '*';
 
-  for (string::size_type i = 0; i < input.size(); i++) {
-    char c = input[i];
-    switch (c) {
-      case '*':
-        // Avoid "/*".
-        if (prev == '/') {
-          result.append("&#42;");
-        } else {
-          result.push_back(c);
+    for (string::size_type i = 0; i < input.size(); i++) {
+        char c = input[i];
+        switch (c) {
+        case '*':
+            // Avoid "/*".
+            if (prev == '/') {
+                result.append("&#42;");
+            } else {
+                result.push_back(c);
+            }
+            break;
+        case '/':
+            // Avoid "*/".
+            if (prev == '*') {
+                result.append("&#47;");
+            } else {
+                result.push_back(c);
+            }
+            break;
+        case '@':
+            // '@' starts javadoc tags including the @deprecated tag, which will
+            // cause a compile-time error if inserted before a declaration that
+            // does not have a corresponding @Deprecated annotation.
+            result.append("&#64;");
+            break;
+        case '<':
+            // Avoid interpretation as HTML.
+            result.append("&lt;");
+            break;
+        case '>':
+            // Avoid interpretation as HTML.
+            result.append("&gt;");
+            break;
+        case '&':
+            // Avoid interpretation as HTML.
+            result.append("&amp;");
+            break;
+        case '\\':
+            // Java interprets Unicode escape sequences anywhere!
+            result.append("&#92;");
+            break;
+        default:
+            result.push_back(c);
+            break;
         }
-        break;
-      case '/':
-        // Avoid "*/".
-        if (prev == '*') {
-          result.append("&#47;");
-        } else {
-          result.push_back(c);
-        }
-        break;
-      case '@':
-        // '@' starts javadoc tags including the @deprecated tag, which will
-        // cause a compile-time error if inserted before a declaration that
-        // does not have a corresponding @Deprecated annotation.
-        result.append("&#64;");
-        break;
-      case '<':
-        // Avoid interpretation as HTML.
-        result.append("&lt;");
-        break;
-      case '>':
-        // Avoid interpretation as HTML.
-        result.append("&gt;");
-        break;
-      case '&':
-        // Avoid interpretation as HTML.
-        result.append("&amp;");
-        break;
-      case '\\':
-        // Java interprets Unicode escape sequences anywhere!
-        result.append("&#92;");
-        break;
-      default:
-        result.push_back(c);
-        break;
+
+        prev = c;
     }
 
-    prev = c;
-  }
-
-  return result;
+    return result;
 }
 
 static void WriteDocCommentBodyForLocation(
-    io::Printer* printer, const SourceLocation& location) {
-  string comments = location.leading_comments.empty() ?
-      location.trailing_comments : location.leading_comments;
-  if (!comments.empty()) {
-    // TODO(kenton):  Ideally we should parse the comment text as Markdown and
-    //   write it back as HTML, but this requires a Markdown parser.  For now
-    //   we just use <pre> to get fixed-width text formatting.
+        io::Printer* printer, const SourceLocation& location)
+{
+    string comments = location.leading_comments.empty() ?
+            location.trailing_comments : location.leading_comments;
+    if (!comments.empty()) {
+        // TODO(kenton):  Ideally we should parse the comment text as Markdown and
+        //   write it back as HTML, but this requires a Markdown parser.  For now
+        //   we just use <pre> to get fixed-width text formatting.
 
-    // If the comment itself contains block comment start or end markers,
-    // HTML-escape them so that they don't accidentally close the doc comment.
-    comments = EscapeJavadoc(comments);
+        // If the comment itself contains block comment start or end markers,
+        // HTML-escape them so that they don't accidentally close the doc comment.
+        comments = EscapeJavadoc(comments);
 
-    vector<string> lines = Split(comments, "\n");
-    while (!lines.empty() && lines.back().empty()) {
-      lines.pop_back();
+        vector<string> lines = Split(comments, "\n");
+        while (!lines.empty() && lines.back().empty()) {
+            lines.pop_back();
+        }
+
+        printer->Print(
+                " *\n"
+                " * <pre>\n");
+        for (int i = 0; i < lines.size(); i++) {
+            // Most lines should start with a space.  Watch out for lines that start
+            // with a /, since putting that right after the leading asterisk will
+            // close the comment.
+            if (!lines[i].empty() && lines[i][0] == '/') {
+                printer->Print(" * $line$\n", "line", lines[i]);
+            } else {
+                printer->Print(" *$line$\n", "line", lines[i]);
+            }
+        }
+        printer->Print(" * </pre>\n");
     }
-
-    printer->Print(
-        " *\n"
-        " * <pre>\n");
-    for (int i = 0; i < lines.size(); i++) {
-      // Most lines should start with a space.  Watch out for lines that start
-      // with a /, since putting that right after the leading asterisk will
-      // close the comment.
-      if (!lines[i].empty() && lines[i][0] == '/') {
-        printer->Print(" * $line$\n", "line", lines[i]);
-      } else {
-        printer->Print(" *$line$\n", "line", lines[i]);
-      }
-    }
-    printer->Print(" * </pre>\n");
-  }
 }
 
 template <typename DescriptorType>
 static void WriteDocCommentBody(
-    io::Printer* printer, const DescriptorType* descriptor) {
-  SourceLocation location;
-  if (descriptor->GetSourceLocation(&location)) {
-    WriteDocCommentBodyForLocation(printer, location);
-  }
+        io::Printer* printer, const DescriptorType* descriptor)
+{
+    SourceLocation location;
+    if (descriptor->GetSourceLocation(&location)) {
+        WriteDocCommentBodyForLocation(printer, location);
+    }
 }
 
-static string FirstLineOf(const string& value) {
-  string result = value;
+static string FirstLineOf(const string& value)
+{
+    string result = value;
 
-  string::size_type pos = result.find_first_of('\n');
-  if (pos != string::npos) {
-    result.erase(pos);
-  }
+    string::size_type pos = result.find_first_of('\n');
+    if (pos != string::npos) {
+        result.erase(pos);
+    }
 
-  // If line ends in an opening brace, make it "{ ... }" so it looks nice.
-  if (!result.empty() && result[result.size() - 1] == '{') {
-    result.append(" ... }");
-  }
+    // If line ends in an opening brace, make it "{ ... }" so it looks nice.
+    if (!result.empty() && result[result.size() - 1] == '{') {
+        result.append(" ... }");
+    }
 
-  return result;
+    return result;
 }
 
-void WriteMessageDocComment(io::Printer* printer, const Descriptor* message) {
-  printer->Print(
-    "/**\n"
-    " * Protobuf type {@code $fullname$}\n",
-    "fullname", EscapeJavadoc(message->full_name()));
-  WriteDocCommentBody(printer, message);
-  printer->Print(" */\n");
+void WriteMessageDocComment(io::Printer* printer, const Descriptor* message)
+{
+    printer->Print(
+            "/**\n"
+            " * Protobuf type {@code $fullname$}\n",
+            "fullname", EscapeJavadoc(message->full_name()));
+    WriteDocCommentBody(printer, message);
+    printer->Print(" */\n");
 }
 
-void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field) {
-  // In theory we should have slightly different comments for setters, getters,
-  // etc., but in practice everyone already knows the difference between these
-  // so it's redundant information.
+void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field)
+{
+    // In theory we should have slightly different comments for setters, getters,
+    // etc., but in practice everyone already knows the difference between these
+    // so it's redundant information.
 
-  // We use the field declaration as the first line of the comment, e.g.:
-  //   optional string foo = 5;
-  // This communicates a lot of information about the field in a small space.
-  // If the field is a group, the debug string might end with {.
-  printer->Print(
-    "/**\n"
-    " * <code>$def$</code>\n",
-    "def", EscapeJavadoc(FirstLineOf(field->DebugString())));
-  WriteDocCommentBody(printer, field);
-  printer->Print(" */\n");
+    // We use the field declaration as the first line of the comment, e.g.:
+    //   optional string foo = 5;
+    // This communicates a lot of information about the field in a small space.
+    // If the field is a group, the debug string might end with {.
+    printer->Print(
+            "/**\n"
+            " * <code>$def$</code>\n",
+            "def", EscapeJavadoc(FirstLineOf(field->DebugString())));
+    WriteDocCommentBody(printer, field);
+    printer->Print(" */\n");
 }
 
-void WriteEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_) {
-  printer->Print(
-    "/**\n"
-    " * Protobuf enum {@code $fullname$}\n",
-    "fullname", EscapeJavadoc(enum_->full_name()));
-  WriteDocCommentBody(printer, enum_);
-  printer->Print(" */\n");
+void WriteEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_)
+{
+    printer->Print(
+            "/**\n"
+            " * Protobuf enum {@code $fullname$}\n",
+            "fullname", EscapeJavadoc(enum_->full_name()));
+    WriteDocCommentBody(printer, enum_);
+    printer->Print(" */\n");
 }
 
 void WriteEnumValueDocComment(io::Printer* printer,
-                              const EnumValueDescriptor* value) {
-  printer->Print(
-    "/**\n"
-    " * <code>$def$</code>\n",
-    "def", EscapeJavadoc(FirstLineOf(value->DebugString())));
-  WriteDocCommentBody(printer, value);
-  printer->Print(" */\n");
+        const EnumValueDescriptor* value)
+{
+    printer->Print(
+            "/**\n"
+            " * <code>$def$</code>\n",
+            "def", EscapeJavadoc(FirstLineOf(value->DebugString())));
+    WriteDocCommentBody(printer, value);
+    printer->Print(" */\n");
 }
 
 void WriteServiceDocComment(io::Printer* printer,
-                            const ServiceDescriptor* service) {
-  printer->Print(
-    "/**\n"
-    " * Protobuf service {@code $fullname$}\n",
-    "fullname", EscapeJavadoc(service->full_name()));
-  WriteDocCommentBody(printer, service);
-  printer->Print(" */\n");
+        const ServiceDescriptor* service)
+{
+    printer->Print(
+            "/**\n"
+            " * Protobuf service {@code $fullname$}\n",
+            "fullname", EscapeJavadoc(service->full_name()));
+    WriteDocCommentBody(printer, service);
+    printer->Print(" */\n");
 }
 
 void WriteMethodDocComment(io::Printer* printer,
-                           const MethodDescriptor* method) {
-  printer->Print(
-    "/**\n"
-    " * <code>$def$</code>\n",
-    "def", EscapeJavadoc(FirstLineOf(method->DebugString())));
-  WriteDocCommentBody(printer, method);
-  printer->Print(" */\n");
+        const MethodDescriptor* method)
+{
+    printer->Print(
+            "/**\n"
+            " * <code>$def$</code>\n",
+            "def", EscapeJavadoc(FirstLineOf(method->DebugString())));
+    WriteDocCommentBody(printer, method);
+    printer->Print(" */\n");
 }
 
-}  // namespace java
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace java
+} // namespace compiler
+} // namespace protobuf
+} // namespace google

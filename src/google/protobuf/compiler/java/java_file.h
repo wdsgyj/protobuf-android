@@ -42,20 +42,20 @@
 
 namespace google {
 namespace protobuf {
-  class FileDescriptor;          // descriptor.h
-  namespace io {
-    class Printer;               // printer.h
-  }
-  namespace compiler {
-    class GeneratorContext;      // code_generator.h
-    namespace java {
-      class Context;             // context.h
-      class MessageGenerator;    // message.h
-      class GeneratorFactory;    // generator_factory.h
-      class ExtensionGenerator;  // extension.h
-      class ClassNameResolver;   // name_resolver.h
-    }
-  }
+class FileDescriptor; // descriptor.h
+namespace io {
+class Printer; // printer.h
+}
+namespace compiler {
+class GeneratorContext; // code_generator.h
+namespace java {
+class Context; // context.h
+class MessageGenerator; // message.h
+class GeneratorFactory; // generator_factory.h
+class ExtensionGenerator; // extension.h
+class ClassNameResolver; // name_resolver.h
+}
+}
 }
 
 namespace protobuf {
@@ -63,53 +63,60 @@ namespace compiler {
 namespace java {
 
 class FileGenerator {
- public:
-  FileGenerator(const FileDescriptor* file, bool immutable_api = true);
-  ~FileGenerator();
+public:
+    FileGenerator(const FileDescriptor* file, bool immutable_api = true);
+    ~FileGenerator();
 
-  // Checks for problems that would otherwise lead to cryptic compile errors.
-  // Returns true if there are no problems, or writes an error description to
-  // the given string and returns false otherwise.
-  bool Validate(string* error);
+    // Checks for problems that would otherwise lead to cryptic compile errors.
+    // Returns true if there are no problems, or writes an error description to
+    // the given string and returns false otherwise.
+    bool Validate(string* error);
 
-  void Generate(io::Printer* printer);
+    void Generate(io::Printer* printer);
 
-  // If we aren't putting everything into one file, this will write all the
-  // files other than the outer file (i.e. one for each message, enum, and
-  // service type).
-  void GenerateSiblings(const string& package_dir,
-                        GeneratorContext* generator_context,
-                        vector<string>* file_list);
+    // If we aren't putting everything into one file, this will write all the
+    // files other than the outer file (i.e. one for each message, enum, and
+    // service type).
+    void GenerateSiblings(const string& package_dir,
+            GeneratorContext* generator_context,
+            vector<string>* file_list);
 
-  const string& java_package() { return java_package_; }
-  const string& classname()    { return classname_;    }
+    const string& java_package()
+    {
+        return java_package_;
+    }
 
-
- private:
-  void GenerateDescriptorInitializationCodeForImmutable(io::Printer* printer);
-  void GenerateDescriptorInitializationCodeForMutable(io::Printer* printer);
-
-  bool ShouldIncludeDependency(const FileDescriptor* descriptor,
-                               bool immutable_api_);
-
-  const FileDescriptor* file_;
-  string java_package_;
-  string classname_;
-
-  scoped_array<scoped_ptr<MessageGenerator> > message_generators_;
-  scoped_array<scoped_ptr<ExtensionGenerator> > extension_generators_;
-  scoped_ptr<GeneratorFactory> generator_factory_;
-  scoped_ptr<Context> context_;
-  ClassNameResolver* name_resolver_;
-  bool immutable_api_;
+    const string& classname()
+    {
+        return classname_;
+    }
 
 
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);
+private:
+    void GenerateDescriptorInitializationCodeForImmutable(io::Printer* printer);
+    void GenerateDescriptorInitializationCodeForMutable(io::Printer* printer);
+
+    bool ShouldIncludeDependency(const FileDescriptor* descriptor,
+            bool immutable_api_);
+
+    const FileDescriptor* file_;
+    string java_package_;
+    string classname_;
+
+    scoped_array<scoped_ptr<MessageGenerator> > message_generators_;
+    scoped_array<scoped_ptr<ExtensionGenerator> > extension_generators_;
+    scoped_ptr<GeneratorFactory> generator_factory_;
+    scoped_ptr<Context> context_;
+    ClassNameResolver* name_resolver_;
+    bool immutable_api_;
+
+
+    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);
 };
 
-}  // namespace java
-}  // namespace compiler
-}  // namespace protobuf
+} // namespace java
+} // namespace compiler
+} // namespace protobuf
 
-}  // namespace google
+} // namespace google
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_FILE_H__

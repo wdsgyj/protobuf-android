@@ -42,17 +42,20 @@ namespace compiler {
 namespace cpp {
 
 // Generator options:
+
 struct Options {
-  Options() : safe_boundary_check(false) {
-  }
-  string dllexport_decl;
-  bool safe_boundary_check;
+
+    Options() : safe_boundary_check(false)
+    {
+    }
+    string dllexport_decl;
+    bool safe_boundary_check;
 };
 
-}  // namespace cpp
-}  // namespace compiler
-}  // namespace protobuf
+} // namespace cpp
+} // namespace compiler
+} // namespace protobuf
 
 
-}  // namespace google
+} // namespace google
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_OPTIONS_H__

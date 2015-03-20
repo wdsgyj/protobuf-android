@@ -42,9 +42,9 @@
 
 namespace google {
 namespace protobuf {
-  namespace io {
-    class Printer;             // printer.h
-  }
+namespace io {
+class Printer; // printer.h
+}
 }
 
 namespace protobuf {
@@ -52,49 +52,53 @@ namespace compiler {
 namespace javamicro {
 
 class FieldGenerator {
- public:
-  //FieldGenerator() {}
-  FieldGenerator(const Params& params) : params_(params) {}
-  virtual ~FieldGenerator();
+public:
+    //FieldGenerator() {}
 
-  virtual void GenerateMembers(io::Printer* printer) const = 0;
-  virtual void GenerateMergingCode(io::Printer* printer) const = 0;
-  virtual void GenerateParsingCode(io::Printer* printer) const = 0;
-  virtual void GenerateSerializationCode(io::Printer* printer) const = 0;
-  virtual void GenerateSerializedSizeCode(io::Printer* printer) const = 0;
-  virtual void GenerateToJsonCode(io::Printer* printer) const = 0;
-  virtual void GenerateFromJsonCode(io::Printer* printer) const = 0;
+    FieldGenerator(const Params& params) : params_(params)
+    {
+    }
+    virtual ~FieldGenerator();
 
-  virtual string GetBoxedType() const = 0;
+    virtual void GenerateMembers(io::Printer* printer) const = 0;
+    virtual void GenerateMergingCode(io::Printer* printer) const = 0;
+    virtual void GenerateParsingCode(io::Printer* printer) const = 0;
+    virtual void GenerateSerializationCode(io::Printer* printer) const = 0;
+    virtual void GenerateSerializedSizeCode(io::Printer* printer) const = 0;
+    virtual void GenerateToJsonCode(io::Printer* printer) const = 0;
+    virtual void GenerateFromJsonCode(io::Printer* printer) const = 0;
 
- protected:
-  const Params& params_;
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldGenerator);
+    virtual string GetBoxedType() const = 0;
+
+protected:
+    const Params& params_;
+private:
+    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldGenerator);
 };
 
 // Convenience class which constructs FieldGenerators for a Descriptor.
+
 class FieldGeneratorMap {
- public:
-  explicit FieldGeneratorMap(const Descriptor* descriptor, const Params &params);
-  ~FieldGeneratorMap();
+public:
+    explicit FieldGeneratorMap(const Descriptor* descriptor, const Params &params);
+    ~FieldGeneratorMap();
 
-  const FieldGenerator& get(const FieldDescriptor* field) const;
-  const FieldGenerator& get_extension(int index) const;
+    const FieldGenerator& get(const FieldDescriptor* field) const;
+    const FieldGenerator& get_extension(int index) const;
 
- private:
-  const Descriptor* descriptor_;
-  scoped_array<scoped_ptr<FieldGenerator> > field_generators_;
-  scoped_array<scoped_ptr<FieldGenerator> > extension_generators_;
+private:
+    const Descriptor* descriptor_;
+    scoped_array<scoped_ptr<FieldGenerator> > field_generators_;
+    scoped_array<scoped_ptr<FieldGenerator> > extension_generators_;
 
-  static FieldGenerator* MakeGenerator(const FieldDescriptor* field, const Params &params);
+    static FieldGenerator* MakeGenerator(const FieldDescriptor* field, const Params &params);
 
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldGeneratorMap);
+    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldGeneratorMap);
 };
 
-}  // namespace javamicro
-}  // namespace compiler
-}  // namespace protobuf
+} // namespace javamicro
+} // namespace compiler
+} // namespace protobuf
 
-}  // namespace google
+} // namespace google
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_FIELD_H__

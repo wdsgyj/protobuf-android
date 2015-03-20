@@ -53,228 +53,252 @@ namespace {
 
 // TODO(kenton):  Factor out a "SetCommonFieldVariables()" to get rid of
 //   repeat code between this and the other field types.
+
 void SetMessageVariables(const Params& params,
-    const FieldDescriptor* descriptor, map<string, string>* variables) {
-  (*variables)["name"] =
-    RenameJavaKeywords(UnderscoresToCamelCase(descriptor));
-  (*variables)["capitalized_name"] =
-    RenameJavaKeywords(UnderscoresToCapitalizedCamelCase(descriptor));
-  (*variables)["number"] = SimpleItoa(descriptor->number());
-  (*variables)["type"] = ClassName(params, descriptor->message_type());
-  (*variables)["group_or_message"] =
-    (descriptor->type() == FieldDescriptor::TYPE_GROUP) ?
-    "Group" : "Message";
-  (*variables)["message_name"] = descriptor->containing_type()->name();
-  //(*variables)["message_type"] = descriptor->message_type()->name();
-  (*variables)["tag"] = SimpleItoa(WireFormat::MakeTag(descriptor));
+        const FieldDescriptor* descriptor, map<string, string>* variables)
+{
+    (*variables)["name"] =
+            RenameJavaKeywords(UnderscoresToCamelCase(descriptor));
+    (*variables)["capitalized_name"] =
+            RenameJavaKeywords(UnderscoresToCapitalizedCamelCase(descriptor));
+    (*variables)["number"] = SimpleItoa(descriptor->number());
+    (*variables)["type"] = ClassName(params, descriptor->message_type());
+    (*variables)["group_or_message"] =
+            (descriptor->type() == FieldDescriptor::TYPE_GROUP) ?
+            "Group" : "Message";
+    (*variables)["message_name"] = descriptor->containing_type()->name();
+    //(*variables)["message_type"] = descriptor->message_type()->name();
+    (*variables)["tag"] = SimpleItoa(WireFormat::MakeTag(descriptor));
 }
 
-}  // namespace
+} // namespace
 
 // ===================================================================
 
 MessageFieldGenerator::
 MessageFieldGenerator(const FieldDescriptor* descriptor, const Params& params)
-  : FieldGenerator(params), descriptor_(descriptor) {
-  SetMessageVariables(params, descriptor, &variables_);
+: FieldGenerator(params), descriptor_(descriptor)
+{
+    SetMessageVariables(params, descriptor, &variables_);
 }
 
-MessageFieldGenerator::~MessageFieldGenerator() {}
-
-void MessageFieldGenerator::
-GenerateMembers(io::Printer* printer, bool /* unused lazy_init */) const {
-  printer->Print(variables_,
-    "public $type$ $name$;\n");
+MessageFieldGenerator::~MessageFieldGenerator()
+{
 }
 
 void MessageFieldGenerator::
-GenerateClearCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "$name$ = null;\n");
-}
-
-void MessageFieldGenerator::
-GenerateMergingCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "if (this.$name$ == null) {\n"
-    "  this.$name$ = new $type$();\n"
-    "}\n");
-
-  if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
+GenerateMembers(io::Printer* printer, bool /* unused lazy_init */) const
+{
     printer->Print(variables_,
-      "input.readGroup(this.$name$, $number$);\n");
-  } else {
+            "public $type$ $name$;\n");
+}
+
+void MessageFieldGenerator::
+GenerateClearCode(io::Printer* printer) const
+{
     printer->Print(variables_,
-      "input.readMessage(this.$name$);\n");
-  }
+            "$name$ = null;\n");
 }
 
 void MessageFieldGenerator::
-GenerateSerializationCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "if (this.$name$ != null) {\n"
-    "  output.write$group_or_message$($number$, this.$name$);\n"
-    "}\n");
+GenerateMergingCode(io::Printer* printer) const
+{
+    printer->Print(variables_,
+            "if (this.$name$ == null) {\n"
+            "  this.$name$ = new $type$();\n"
+            "}\n");
+
+    if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
+        printer->Print(variables_,
+                "input.readGroup(this.$name$, $number$);\n");
+    } else {
+        printer->Print(variables_,
+                "input.readMessage(this.$name$);\n");
+    }
 }
 
 void MessageFieldGenerator::
-GenerateSerializedSizeCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "if (this.$name$ != null) {\n"
-    "  size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
-    "    .compute$group_or_message$Size($number$, this.$name$);\n"
-    "}\n");
+GenerateSerializationCode(io::Printer* printer) const
+{
+    printer->Print(variables_,
+            "if (this.$name$ != null) {\n"
+            "  output.write$group_or_message$($number$, this.$name$);\n"
+            "}\n");
 }
 
 void MessageFieldGenerator::
-GenerateFixClonedCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "if (this.$name$ != null) {\n"
-    "  cloned.$name$ = this.$name$.clone();\n"
-    "}\n");
+GenerateSerializedSizeCode(io::Printer* printer) const
+{
+    printer->Print(variables_,
+            "if (this.$name$ != null) {\n"
+            "  size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
+            "    .compute$group_or_message$Size($number$, this.$name$);\n"
+            "}\n");
 }
 
 void MessageFieldGenerator::
-GenerateEqualsCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "if (this.$name$ == null) { \n"
-    "  if (other.$name$ != null) {\n"
-    "    return false;\n"
-    "  }\n"
-    "} else {\n"
-    "  if (!this.$name$.equals(other.$name$)) {\n"
-    "    return false;\n"
-    "  }\n"
-    "}\n");
+GenerateFixClonedCode(io::Printer* printer) const
+{
+    printer->Print(variables_,
+            "if (this.$name$ != null) {\n"
+            "  cloned.$name$ = this.$name$.clone();\n"
+            "}\n");
 }
 
 void MessageFieldGenerator::
-GenerateHashCodeCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "result = 31 * result +\n"
-    "    (this.$name$ == null ? 0 : this.$name$.hashCode());\n");
+GenerateEqualsCode(io::Printer* printer) const
+{
+    printer->Print(variables_,
+            "if (this.$name$ == null) { \n"
+            "  if (other.$name$ != null) {\n"
+            "    return false;\n"
+            "  }\n"
+            "} else {\n"
+            "  if (!this.$name$.equals(other.$name$)) {\n"
+            "    return false;\n"
+            "  }\n"
+            "}\n");
+}
+
+void MessageFieldGenerator::
+GenerateHashCodeCode(io::Printer* printer) const
+{
+    printer->Print(variables_,
+            "result = 31 * result +\n"
+            "    (this.$name$ == null ? 0 : this.$name$.hashCode());\n");
 }
 
 // ===================================================================
 
 RepeatedMessageFieldGenerator::
 RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor, const Params& params)
-  : FieldGenerator(params), descriptor_(descriptor) {
-  SetMessageVariables(params, descriptor, &variables_);
+: FieldGenerator(params), descriptor_(descriptor)
+{
+    SetMessageVariables(params, descriptor, &variables_);
 }
 
-RepeatedMessageFieldGenerator::~RepeatedMessageFieldGenerator() {}
-
-void RepeatedMessageFieldGenerator::
-GenerateMembers(io::Printer* printer, bool /* unused lazy_init */) const {
-  printer->Print(variables_,
-    "public $type$[] $name$;\n");
+RepeatedMessageFieldGenerator::~RepeatedMessageFieldGenerator()
+{
 }
 
 void RepeatedMessageFieldGenerator::
-GenerateClearCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "$name$ = $type$.emptyArray();\n");
-}
-
-void RepeatedMessageFieldGenerator::
-GenerateMergingCode(io::Printer* printer) const {
-  // First, figure out the length of the array, then parse.
-  printer->Print(variables_,
-    "int arrayLength = com.google.protobuf.nano.WireFormatNano\n"
-    "    .getRepeatedFieldArrayLength(input, $tag$);\n"
-    "int i = this.$name$ == null ? 0 : this.$name$.length;\n"
-    "$type$[] newArray =\n"
-    "    new $type$[i + arrayLength];\n"
-    "if (i != 0) {\n"
-    "  java.lang.System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
-    "}\n"
-    "for (; i < newArray.length - 1; i++) {\n"
-    "  newArray[i] = new $type$();\n");
-
-  if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
+GenerateMembers(io::Printer* printer, bool /* unused lazy_init */) const
+{
     printer->Print(variables_,
-      "  input.readGroup(newArray[i], $number$);\n");
-  } else {
+            "public $type$[] $name$;\n");
+}
+
+void RepeatedMessageFieldGenerator::
+GenerateClearCode(io::Printer* printer) const
+{
     printer->Print(variables_,
-      "  input.readMessage(newArray[i]);\n");
-  }
+            "$name$ = $type$.emptyArray();\n");
+}
 
-  printer->Print(variables_,
-    "  input.readTag();\n"
-    "}\n"
-    "// Last one without readTag.\n"
-    "newArray[i] = new $type$();\n");
-
-  if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
+void RepeatedMessageFieldGenerator::
+GenerateMergingCode(io::Printer* printer) const
+{
+    // First, figure out the length of the array, then parse.
     printer->Print(variables_,
-      "input.readGroup(newArray[i], $number$);\n");
-  } else {
+            "int arrayLength = com.google.protobuf.nano.WireFormatNano\n"
+            "    .getRepeatedFieldArrayLength(input, $tag$);\n"
+            "int i = this.$name$ == null ? 0 : this.$name$.length;\n"
+            "$type$[] newArray =\n"
+            "    new $type$[i + arrayLength];\n"
+            "if (i != 0) {\n"
+            "  java.lang.System.arraycopy(this.$name$, 0, newArray, 0, i);\n"
+            "}\n"
+            "for (; i < newArray.length - 1; i++) {\n"
+            "  newArray[i] = new $type$();\n");
+
+    if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
+        printer->Print(variables_,
+                "  input.readGroup(newArray[i], $number$);\n");
+    } else {
+        printer->Print(variables_,
+                "  input.readMessage(newArray[i]);\n");
+    }
+
     printer->Print(variables_,
-      "input.readMessage(newArray[i]);\n");
-  }
+            "  input.readTag();\n"
+            "}\n"
+            "// Last one without readTag.\n"
+            "newArray[i] = new $type$();\n");
 
-  printer->Print(variables_,
-    "this.$name$ = newArray;\n");
+    if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
+        printer->Print(variables_,
+                "input.readGroup(newArray[i], $number$);\n");
+    } else {
+        printer->Print(variables_,
+                "input.readMessage(newArray[i]);\n");
+    }
+
+    printer->Print(variables_,
+            "this.$name$ = newArray;\n");
 }
 
 void RepeatedMessageFieldGenerator::
-GenerateSerializationCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "if (this.$name$ != null && this.$name$.length > 0) {\n"
-    "  for (int i = 0; i < this.$name$.length; i++) {\n"
-    "    $type$ element = this.$name$[i];\n"
-    "    if (element != null) {\n"
-    "      output.write$group_or_message$($number$, element);\n"
-    "    }\n"
-    "  }\n"
-    "}\n");
+GenerateSerializationCode(io::Printer* printer) const
+{
+    printer->Print(variables_,
+            "if (this.$name$ != null && this.$name$.length > 0) {\n"
+            "  for (int i = 0; i < this.$name$.length; i++) {\n"
+            "    $type$ element = this.$name$[i];\n"
+            "    if (element != null) {\n"
+            "      output.write$group_or_message$($number$, element);\n"
+            "    }\n"
+            "  }\n"
+            "}\n");
 }
 
 void RepeatedMessageFieldGenerator::
-GenerateSerializedSizeCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "if (this.$name$ != null && this.$name$.length > 0) {\n"
-    "  for (int i = 0; i < this.$name$.length; i++) {\n"
-    "    $type$ element = this.$name$[i];\n"
-    "    if (element != null) {\n"
-    "      size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
-    "        .compute$group_or_message$Size($number$, element);\n"
-    "    }\n"
-    "  }\n"
-    "}\n");
+GenerateSerializedSizeCode(io::Printer* printer) const
+{
+    printer->Print(variables_,
+            "if (this.$name$ != null && this.$name$.length > 0) {\n"
+            "  for (int i = 0; i < this.$name$.length; i++) {\n"
+            "    $type$ element = this.$name$[i];\n"
+            "    if (element != null) {\n"
+            "      size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
+            "        .compute$group_or_message$Size($number$, element);\n"
+            "    }\n"
+            "  }\n"
+            "}\n");
 }
 
 void RepeatedMessageFieldGenerator::
-GenerateFixClonedCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "if (this.$name$ != null && this.$name$.length > 0) {\n"
-    "  cloned.$name$ = new $type$[this.$name$.length];\n"
-    "  for (int i = 0; i < this.$name$.length; i++) {\n"
-    "    if (this.$name$[i] != null) {\n"
-    "      cloned.$name$[i] = this.$name$[i].clone();\n"
-    "    }\n"
-    "  }\n"
-    "}\n");
+GenerateFixClonedCode(io::Printer* printer) const
+{
+    printer->Print(variables_,
+            "if (this.$name$ != null && this.$name$.length > 0) {\n"
+            "  cloned.$name$ = new $type$[this.$name$.length];\n"
+            "  for (int i = 0; i < this.$name$.length; i++) {\n"
+            "    if (this.$name$[i] != null) {\n"
+            "      cloned.$name$[i] = this.$name$[i].clone();\n"
+            "    }\n"
+            "  }\n"
+            "}\n");
 }
 
 void RepeatedMessageFieldGenerator::
-GenerateEqualsCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "if (!com.google.protobuf.nano.InternalNano.equals(\n"
-    "    this.$name$, other.$name$)) {\n"
-    "  return false;\n"
-    "}\n");
+GenerateEqualsCode(io::Printer* printer) const
+{
+    printer->Print(variables_,
+            "if (!com.google.protobuf.nano.InternalNano.equals(\n"
+            "    this.$name$, other.$name$)) {\n"
+            "  return false;\n"
+            "}\n");
 }
 
 void RepeatedMessageFieldGenerator::
-GenerateHashCodeCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "result = 31 * result\n"
-    "    + com.google.protobuf.nano.InternalNano.hashCode(this.$name$);\n");
+GenerateHashCodeCode(io::Printer* printer) const
+{
+    printer->Print(variables_,
+            "result = 31 * result\n"
+            "    + com.google.protobuf.nano.InternalNano.hashCode(this.$name$);\n");
 }
 
-}  // namespace javanano
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+} // namespace javanano
+} // namespace compiler
+} // namespace protobuf
+} // namespace google

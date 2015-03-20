@@ -60,13 +60,13 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 
-class CodeGenerator;    // code_generator.h
+class CodeGenerator; // code_generator.h
 
 // Implements main() for a protoc plugin exposing the given code generator.
 LIBPROTOC_EXPORT int PluginMain(int argc, char* argv[], const CodeGenerator* generator);
 
-}  // namespace compiler
-}  // namespace protobuf
+} // namespace compiler
+} // namespace protobuf
 
-}  // namespace google
+} // namespace google
 #endif  // GOOGLE_PROTOBUF_COMPILER_PLUGIN_H__

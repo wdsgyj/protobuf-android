@@ -42,16 +42,16 @@
 
 namespace google {
 namespace protobuf {
-  class FieldDescriptor;       // descriptor.h
-  namespace compiler {
-    namespace java {
-      class Context;           // context.h
-      class ClassNameResolver; // name_resolver.h
-    }
-  }
-  namespace io {
-    class Printer;             // printer.h
-  }
+class FieldDescriptor; // descriptor.h
+namespace compiler {
+namespace java {
+class Context; // context.h
+class ClassNameResolver; // name_resolver.h
+}
+}
+namespace io {
+class Printer; // printer.h
+}
 }
 
 namespace protobuf {
@@ -61,49 +61,56 @@ namespace java {
 // Generates code for an extension, which may be within the scope of some
 // message or may be at file scope.  This is much simpler than FieldGenerator
 // since extensions are just simple identifiers with interesting types.
+
 class ExtensionGenerator {
- public:
-  explicit ExtensionGenerator() {}
-  virtual ~ExtensionGenerator() {}
+public:
 
-  virtual void Generate(io::Printer* printer) = 0;
-  virtual void GenerateNonNestedInitializationCode(io::Printer* printer) = 0;
-  virtual void GenerateRegistrationCode(io::Printer* printer) = 0;
+    explicit ExtensionGenerator()
+    {
+    }
 
- protected:
-  static void InitTemplateVars(const FieldDescriptor* descriptor,
-                               const string& scope,
-                               bool immutable,
-                               ClassNameResolver* name_resolver,
-                               map<string, string>* vars_pointer);
+    virtual ~ExtensionGenerator()
+    {
+    }
 
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionGenerator);
+    virtual void Generate(io::Printer* printer) = 0;
+    virtual void GenerateNonNestedInitializationCode(io::Printer* printer) = 0;
+    virtual void GenerateRegistrationCode(io::Printer* printer) = 0;
+
+protected:
+    static void InitTemplateVars(const FieldDescriptor* descriptor,
+            const string& scope,
+            bool immutable,
+            ClassNameResolver* name_resolver,
+            map<string, string>* vars_pointer);
+
+private:
+    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionGenerator);
 };
 
 class ImmutableExtensionGenerator : public ExtensionGenerator {
- public:
-  explicit ImmutableExtensionGenerator(const FieldDescriptor* descriptor,
-                                       Context* context);
-  virtual ~ImmutableExtensionGenerator();
+public:
+    explicit ImmutableExtensionGenerator(const FieldDescriptor* descriptor,
+            Context* context);
+    virtual ~ImmutableExtensionGenerator();
 
-  virtual void Generate(io::Printer* printer);
-  virtual void GenerateNonNestedInitializationCode(io::Printer* printer);
-  virtual void GenerateRegistrationCode(io::Printer* printer);
+    virtual void Generate(io::Printer* printer);
+    virtual void GenerateNonNestedInitializationCode(io::Printer* printer);
+    virtual void GenerateRegistrationCode(io::Printer* printer);
 
- protected:
-  const FieldDescriptor* descriptor_;
-  Context* context_;
-  ClassNameResolver* name_resolver_;
-  string scope_;
+protected:
+    const FieldDescriptor* descriptor_;
+    Context* context_;
+    ClassNameResolver* name_resolver_;
+    string scope_;
 
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableExtensionGenerator);
+private:
+    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableExtensionGenerator);
 };
 
-}  // namespace java
-}  // namespace compiler
-}  // namespace protobuf
+} // namespace java
+} // namespace compiler
+} // namespace protobuf
 
-}  // namespace google
+} // namespace google
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_EXTENSION_H__

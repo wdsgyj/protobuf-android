@@ -80,9 +80,11 @@ string FieldConstantName(const FieldDescriptor *field);
 
 // Returns the scope where the field was defined (for extensions, this is
 // different from the message type to which the field applies).
-inline const Descriptor* FieldScope(const FieldDescriptor* field) {
-  return field->is_extension() ?
-    field->extension_scope() : field->containing_type();
+
+inline const Descriptor* FieldScope(const FieldDescriptor* field)
+{
+    return field->is_extension() ?
+            field->extension_scope() : field->containing_type();
 }
 
 // Returns the fully-qualified type name field->message_type().  Usually this
@@ -132,13 +134,15 @@ string EscapeTrigraphs(const string& to_escape);
 
 // Escaped function name to eliminate naming conflict.
 string SafeFunctionName(const Descriptor* descriptor,
-                        const FieldDescriptor* field,
-                        const string& prefix);
+        const FieldDescriptor* field,
+        const string& prefix);
 
 // Do message classes in this file use UnknownFieldSet?
 // Otherwise, messages will store unknown fields in a string
-inline bool UseUnknownFieldSet(const FileDescriptor* file) {
-  return file->options().optimize_for() != FileOptions::LITE_RUNTIME;
+
+inline bool UseUnknownFieldSet(const FileDescriptor* file)
+{
+    return file->options().optimize_for() != FileOptions::LITE_RUNTIME;
 }
 
 
@@ -147,32 +151,42 @@ bool HasEnumDefinitions(const FileDescriptor* file);
 
 // Does this file have generated parsing, serialization, and other
 // standard methods for which reflection-based fallback implementations exist?
-inline bool HasGeneratedMethods(const FileDescriptor* file) {
-  return file->options().optimize_for() != FileOptions::CODE_SIZE;
+
+inline bool HasGeneratedMethods(const FileDescriptor* file)
+{
+    return file->options().optimize_for() != FileOptions::CODE_SIZE;
 }
 
 // Do message classes in this file have descriptor and reflection methods?
-inline bool HasDescriptorMethods(const FileDescriptor* file) {
-  return file->options().optimize_for() != FileOptions::LITE_RUNTIME;
+
+inline bool HasDescriptorMethods(const FileDescriptor* file)
+{
+    return file->options().optimize_for() != FileOptions::LITE_RUNTIME;
 }
 
 // Should we generate generic services for this file?
-inline bool HasGenericServices(const FileDescriptor* file) {
-  return file->service_count() > 0 &&
-         file->options().optimize_for() != FileOptions::LITE_RUNTIME &&
-         file->options().cc_generic_services();
+
+inline bool HasGenericServices(const FileDescriptor* file)
+{
+    return file->service_count() > 0 &&
+            file->options().optimize_for() != FileOptions::LITE_RUNTIME &&
+            file->options().cc_generic_services();
 }
 
 // Should string fields in this file verify that their contents are UTF-8?
-inline bool HasUtf8Verification(const FileDescriptor* file) {
-  return file->options().optimize_for() != FileOptions::LITE_RUNTIME;
+
+inline bool HasUtf8Verification(const FileDescriptor* file)
+{
+    return file->options().optimize_for() != FileOptions::LITE_RUNTIME;
 }
 
 // Should we generate a separate, super-optimized code path for serializing to
 // flat arrays?  We don't do this in Lite mode because we'd rather reduce code
 // size.
-inline bool HasFastArraySerialization(const FileDescriptor* file) {
-  return file->options().optimize_for() == FileOptions::SPEED;
+
+inline bool HasFastArraySerialization(const FileDescriptor* file)
+{
+    return file->options().optimize_for() == FileOptions::SPEED;
 }
 
 // Returns whether we have to generate code with static initializers.
@@ -182,15 +196,15 @@ bool StaticInitializersForced(const FileDescriptor* file);
 // provided file. Otherwise emits both 'with_static_init' and
 // 'without_static_init' using #ifdef.
 void PrintHandlingOptionalStaticInitializers(
-    const FileDescriptor* file, io::Printer* printer,
-    const char* with_static_init, const char* without_static_init,
-    const char* var1 = NULL, const string& val1 = "",
-    const char* var2 = NULL, const string& val2 = "");
+        const FileDescriptor* file, io::Printer* printer,
+        const char* with_static_init, const char* without_static_init,
+        const char* var1 = NULL, const string& val1 = "",
+        const char* var2 = NULL, const string& val2 = "");
 
 void PrintHandlingOptionalStaticInitializers(
-    const map<string, string>& vars, const FileDescriptor* file,
-    io::Printer* printer, const char* with_static_init,
-    const char* without_static_init);
+        const map<string, string>& vars, const FileDescriptor* file,
+        io::Printer* printer, const char* with_static_init,
+        const char* without_static_init);
 
 
 // Returns true if the field's CPPTYPE is string or message.
@@ -198,9 +212,9 @@ bool IsStringOrMessage(const FieldDescriptor* field);
 
 string UnderscoresToCamelCase(const string& input, bool cap_next_letter);
 
-}  // namespace cpp
-}  // namespace compiler
-}  // namespace protobuf
+} // namespace cpp
+} // namespace compiler
+} // namespace protobuf
 
-}  // namespace google
+} // namespace google
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_HELPERS_H__

@@ -49,24 +49,25 @@ namespace javamicro {
 // own protocol compiler binary and you want it to support Java output for the
 // micro runtime, you can do so by registering an instance of this CodeGenerator with
 // the CommandLineInterface in your main() function.
+
 class LIBPROTOC_EXPORT JavaMicroGenerator : public CodeGenerator {
- public:
-  JavaMicroGenerator();
-  ~JavaMicroGenerator();
+public:
+    JavaMicroGenerator();
+    ~JavaMicroGenerator();
 
-  // implements CodeGenerator ----------------------------------------
-  bool Generate(const FileDescriptor* file,
-                const string& parameter,
-                OutputDirectory* output_directory,
-                string* error) const;
+    // implements CodeGenerator ----------------------------------------
+    bool Generate(const FileDescriptor* file,
+            const string& parameter,
+            OutputDirectory* output_directory,
+            string* error) const;
 
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(JavaMicroGenerator);
+private:
+    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(JavaMicroGenerator);
 };
 
-}  // namespace javamicro
-}  // namespace compiler
-}  // namespace protobuf
+} // namespace javamicro
+} // namespace compiler
+} // namespace protobuf
 
-}  // namespace google
+} // namespace google
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_MICRO_GENERATOR_H__

@@ -48,7 +48,8 @@ namespace protobuf {
 // work with their own I/O abstractions -- e.g., to allow Protocol Buffers
 // to be read from a different kind of input stream without the need for a
 // temporary buffer -- should take a closer look.
-namespace io {}
+namespace io {
+}
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google

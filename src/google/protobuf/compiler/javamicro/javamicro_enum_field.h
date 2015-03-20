@@ -45,54 +45,54 @@ namespace compiler {
 namespace javamicro {
 
 class EnumFieldGenerator : public FieldGenerator {
- public:
-  explicit EnumFieldGenerator(const FieldDescriptor* descriptor, const Params& params);
-  ~EnumFieldGenerator();
+public:
+    explicit EnumFieldGenerator(const FieldDescriptor* descriptor, const Params& params);
+    ~EnumFieldGenerator();
 
-  // implements FieldGenerator ---------------------------------------
-  void GenerateMembers(io::Printer* printer) const;
-  void GenerateMergingCode(io::Printer* printer) const;
-  void GenerateParsingCode(io::Printer* printer) const;
-  void GenerateSerializationCode(io::Printer* printer) const;
-  void GenerateSerializedSizeCode(io::Printer* printer) const;
-  void GenerateToJsonCode(io::Printer* printer) const;
-  void GenerateFromJsonCode(io::Printer* printer) const;
+    // implements FieldGenerator ---------------------------------------
+    void GenerateMembers(io::Printer* printer) const;
+    void GenerateMergingCode(io::Printer* printer) const;
+    void GenerateParsingCode(io::Printer* printer) const;
+    void GenerateSerializationCode(io::Printer* printer) const;
+    void GenerateSerializedSizeCode(io::Printer* printer) const;
+    void GenerateToJsonCode(io::Printer* printer) const;
+    void GenerateFromJsonCode(io::Printer* printer) const;
 
-  string GetBoxedType() const;
+    string GetBoxedType() const;
 
- private:
-  const FieldDescriptor* descriptor_;
-  map<string, string> variables_;
+private:
+    const FieldDescriptor* descriptor_;
+    map<string, string> variables_;
 
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumFieldGenerator);
+    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumFieldGenerator);
 };
 
 class RepeatedEnumFieldGenerator : public FieldGenerator {
- public:
-  explicit RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor, const Params& params);
-  ~RepeatedEnumFieldGenerator();
+public:
+    explicit RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor, const Params& params);
+    ~RepeatedEnumFieldGenerator();
 
-  // implements FieldGenerator ---------------------------------------
-  void GenerateMembers(io::Printer* printer) const;
-  void GenerateMergingCode(io::Printer* printer) const;
-  void GenerateParsingCode(io::Printer* printer) const;
-  void GenerateSerializationCode(io::Printer* printer) const;
-  void GenerateSerializedSizeCode(io::Printer* printer) const;
-  void GenerateToJsonCode(io::Printer* printer) const;
-  void GenerateFromJsonCode(io::Printer* printer) const;
+    // implements FieldGenerator ---------------------------------------
+    void GenerateMembers(io::Printer* printer) const;
+    void GenerateMergingCode(io::Printer* printer) const;
+    void GenerateParsingCode(io::Printer* printer) const;
+    void GenerateSerializationCode(io::Printer* printer) const;
+    void GenerateSerializedSizeCode(io::Printer* printer) const;
+    void GenerateToJsonCode(io::Printer* printer) const;
+    void GenerateFromJsonCode(io::Printer* printer) const;
 
-  string GetBoxedType() const;
+    string GetBoxedType() const;
 
- private:
-  const FieldDescriptor* descriptor_;
-  map<string, string> variables_;
+private:
+    const FieldDescriptor* descriptor_;
+    map<string, string> variables_;
 
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedEnumFieldGenerator);
+    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedEnumFieldGenerator);
 };
 
-}  // namespace javamicro
-}  // namespace compiler
-}  // namespace protobuf
+} // namespace javamicro
+} // namespace compiler
+} // namespace protobuf
 
-}  // namespace google
+} // namespace google
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_ENUM_FIELD_H__

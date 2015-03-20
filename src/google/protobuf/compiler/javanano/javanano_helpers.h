@@ -86,23 +86,29 @@ bool IsOuterClassNeeded(const Params& params, const FileDescriptor* file);
 // inferrable from the given arguments, including is_class which indicates
 // whether the entity translates to a Java class.
 string ToJavaName(const Params& params, const string& name, bool is_class,
-    const Descriptor* parent, const FileDescriptor* file);
+        const Descriptor* parent, const FileDescriptor* file);
 
 // These return the fully-qualified class name corresponding to the given
 // descriptor.
-inline string ClassName(const Params& params, const Descriptor* descriptor) {
-  return ToJavaName(params, descriptor->name(), true,
-                    descriptor->containing_type(), descriptor->file());
+
+inline string ClassName(const Params& params, const Descriptor* descriptor)
+{
+    return ToJavaName(params, descriptor->name(), true,
+            descriptor->containing_type(), descriptor->file());
 }
 string ClassName(const Params& params, const EnumDescriptor* descriptor);
+
 inline string ClassName(const Params& params,
-    const ServiceDescriptor* descriptor) {
-  return ToJavaName(params, descriptor->name(), true, NULL, descriptor->file());
+        const ServiceDescriptor* descriptor)
+{
+    return ToJavaName(params, descriptor->name(), true, NULL, descriptor->file());
 }
+
 inline string ExtensionIdentifierName(const Params& params,
-    const FieldDescriptor* descriptor) {
-  return ToJavaName(params, descriptor->name(), false,
-                    descriptor->extension_scope(), descriptor->file());
+        const FieldDescriptor* descriptor)
+{
+    return ToJavaName(params, descriptor->name(), false,
+            descriptor->extension_scope(), descriptor->file());
 }
 string ClassName(const Params& params, const FileDescriptor* descriptor);
 
@@ -116,21 +122,22 @@ string FieldDefaultConstantName(const FieldDescriptor *field);
 void PrintFieldComment(io::Printer* printer, const FieldDescriptor* field);
 
 enum JavaType {
-  JAVATYPE_INT,
-  JAVATYPE_LONG,
-  JAVATYPE_FLOAT,
-  JAVATYPE_DOUBLE,
-  JAVATYPE_BOOLEAN,
-  JAVATYPE_STRING,
-  JAVATYPE_BYTES,
-  JAVATYPE_ENUM,
-  JAVATYPE_MESSAGE
+    JAVATYPE_INT,
+    JAVATYPE_LONG,
+    JAVATYPE_FLOAT,
+    JAVATYPE_DOUBLE,
+    JAVATYPE_BOOLEAN,
+    JAVATYPE_STRING,
+    JAVATYPE_BYTES,
+    JAVATYPE_ENUM,
+    JAVATYPE_MESSAGE
 };
 
 JavaType GetJavaType(FieldDescriptor::Type field_type);
 
-inline JavaType GetJavaType(const FieldDescriptor* field) {
-  return GetJavaType(field->type());
+inline JavaType GetJavaType(const FieldDescriptor* field)
+{
+    return GetJavaType(field->type());
 }
 
 string PrimitiveTypeName(JavaType type);
@@ -179,11 +186,11 @@ string GenerateDifferentBit(int bit_index);
 // the given name of the bit, to the appropriate Java expressions for the given
 // bit index.
 void SetBitOperationVariables(const string name,
-    int bitIndex, map<string, string>* variables);
+        int bitIndex, map<string, string>* variables);
 
-}  // namespace javanano
-}  // namespace compiler
-}  // namespace protobuf
+} // namespace javanano
+} // namespace compiler
+} // namespace protobuf
 
-}  // namespace google
+} // namespace google
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_HELPERS_H__

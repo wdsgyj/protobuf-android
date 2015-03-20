@@ -54,177 +54,188 @@ namespace google {
 namespace protobuf {
 
 class DynamicMessageTest : public testing::Test {
- protected:
-  DescriptorPool pool_;
-  DynamicMessageFactory factory_;
-  const Descriptor* descriptor_;
-  const Message* prototype_;
-  const Descriptor* extensions_descriptor_;
-  const Message* extensions_prototype_;
-  const Descriptor* packed_descriptor_;
-  const Message* packed_prototype_;
-  const Descriptor* oneof_descriptor_;
-  const Message* oneof_prototype_;
+protected:
+    DescriptorPool pool_;
+    DynamicMessageFactory factory_;
+    const Descriptor* descriptor_;
+    const Message* prototype_;
+    const Descriptor* extensions_descriptor_;
+    const Message* extensions_prototype_;
+    const Descriptor* packed_descriptor_;
+    const Message* packed_prototype_;
+    const Descriptor* oneof_descriptor_;
+    const Message* oneof_prototype_;
 
-  DynamicMessageTest(): factory_(&pool_) {}
+    DynamicMessageTest() : factory_(&pool_)
+    {
+    }
 
-  virtual void SetUp() {
-    // We want to make sure that DynamicMessage works (particularly with
-    // extensions) even if we use descriptors that are *not* from compiled-in
-    // types, so we make copies of the descriptors for unittest.proto and
-    // unittest_import.proto.
-    FileDescriptorProto unittest_file;
-    FileDescriptorProto unittest_import_file;
-    FileDescriptorProto unittest_import_public_file;
+    virtual void SetUp()
+    {
+        // We want to make sure that DynamicMessage works (particularly with
+        // extensions) even if we use descriptors that are *not* from compiled-in
+        // types, so we make copies of the descriptors for unittest.proto and
+        // unittest_import.proto.
+        FileDescriptorProto unittest_file;
+        FileDescriptorProto unittest_import_file;
+        FileDescriptorProto unittest_import_public_file;
 
-    unittest::TestAllTypes::descriptor()->file()->CopyTo(&unittest_file);
-    unittest_import::ImportMessage::descriptor()->file()->CopyTo(
-      &unittest_import_file);
-    unittest_import::PublicImportMessage::descriptor()->file()->CopyTo(
-      &unittest_import_public_file);
+        unittest::TestAllTypes::descriptor()->file()->CopyTo(&unittest_file);
+        unittest_import::ImportMessage::descriptor()->file()->CopyTo(
+                &unittest_import_file);
+        unittest_import::PublicImportMessage::descriptor()->file()->CopyTo(
+                &unittest_import_public_file);
 
-    ASSERT_TRUE(pool_.BuildFile(unittest_import_public_file) != NULL);
-    ASSERT_TRUE(pool_.BuildFile(unittest_import_file) != NULL);
-    ASSERT_TRUE(pool_.BuildFile(unittest_file) != NULL);
+        ASSERT_TRUE(pool_.BuildFile(unittest_import_public_file) != NULL);
+        ASSERT_TRUE(pool_.BuildFile(unittest_import_file) != NULL);
+        ASSERT_TRUE(pool_.BuildFile(unittest_file) != NULL);
 
-    descriptor_ = pool_.FindMessageTypeByName("protobuf_unittest.TestAllTypes");
-    ASSERT_TRUE(descriptor_ != NULL);
-    prototype_ = factory_.GetPrototype(descriptor_);
+        descriptor_ = pool_.FindMessageTypeByName("protobuf_unittest.TestAllTypes");
+        ASSERT_TRUE(descriptor_ != NULL);
+        prototype_ = factory_.GetPrototype(descriptor_);
 
-    extensions_descriptor_ =
-      pool_.FindMessageTypeByName("protobuf_unittest.TestAllExtensions");
-    ASSERT_TRUE(extensions_descriptor_ != NULL);
-    extensions_prototype_ = factory_.GetPrototype(extensions_descriptor_);
+        extensions_descriptor_ =
+                pool_.FindMessageTypeByName("protobuf_unittest.TestAllExtensions");
+        ASSERT_TRUE(extensions_descriptor_ != NULL);
+        extensions_prototype_ = factory_.GetPrototype(extensions_descriptor_);
 
-    packed_descriptor_ =
-      pool_.FindMessageTypeByName("protobuf_unittest.TestPackedTypes");
-    ASSERT_TRUE(packed_descriptor_ != NULL);
-    packed_prototype_ = factory_.GetPrototype(packed_descriptor_);
+        packed_descriptor_ =
+                pool_.FindMessageTypeByName("protobuf_unittest.TestPackedTypes");
+        ASSERT_TRUE(packed_descriptor_ != NULL);
+        packed_prototype_ = factory_.GetPrototype(packed_descriptor_);
 
-    oneof_descriptor_ =
-      pool_.FindMessageTypeByName("protobuf_unittest.TestOneof2");
-    ASSERT_TRUE(oneof_descriptor_ != NULL);
-    oneof_prototype_ = factory_.GetPrototype(oneof_descriptor_);
-  }
+        oneof_descriptor_ =
+                pool_.FindMessageTypeByName("protobuf_unittest.TestOneof2");
+        ASSERT_TRUE(oneof_descriptor_ != NULL);
+        oneof_prototype_ = factory_.GetPrototype(oneof_descriptor_);
+    }
 };
 
-TEST_F(DynamicMessageTest, Descriptor) {
-  // Check that the descriptor on the DynamicMessage matches the descriptor
-  // passed to GetPrototype().
-  EXPECT_EQ(prototype_->GetDescriptor(), descriptor_);
+TEST_F(DynamicMessageTest, Descriptor)
+{
+    // Check that the descriptor on the DynamicMessage matches the descriptor
+    // passed to GetPrototype().
+    EXPECT_EQ(prototype_->GetDescriptor(), descriptor_);
 }
 
-TEST_F(DynamicMessageTest, OnePrototype) {
-  // Check that requesting the same prototype twice produces the same object.
-  EXPECT_EQ(prototype_, factory_.GetPrototype(descriptor_));
+TEST_F(DynamicMessageTest, OnePrototype)
+{
+    // Check that requesting the same prototype twice produces the same object.
+    EXPECT_EQ(prototype_, factory_.GetPrototype(descriptor_));
 }
 
-TEST_F(DynamicMessageTest, Defaults) {
-  // Check that all default values are set correctly in the initial message.
-  TestUtil::ReflectionTester reflection_tester(descriptor_);
-  reflection_tester.ExpectClearViaReflection(*prototype_);
+TEST_F(DynamicMessageTest, Defaults)
+{
+    // Check that all default values are set correctly in the initial message.
+    TestUtil::ReflectionTester reflection_tester(descriptor_);
+    reflection_tester.ExpectClearViaReflection(*prototype_);
 }
 
-TEST_F(DynamicMessageTest, IndependentOffsets) {
-  // Check that all fields have independent offsets by setting each
-  // one to a unique value then checking that they all still have those
-  // unique values (i.e. they don't stomp each other).
-  scoped_ptr<Message> message(prototype_->New());
-  TestUtil::ReflectionTester reflection_tester(descriptor_);
+TEST_F(DynamicMessageTest, IndependentOffsets)
+{
+    // Check that all fields have independent offsets by setting each
+    // one to a unique value then checking that they all still have those
+    // unique values (i.e. they don't stomp each other).
+    scoped_ptr<Message> message(prototype_->New());
+    TestUtil::ReflectionTester reflection_tester(descriptor_);
 
-  reflection_tester.SetAllFieldsViaReflection(message.get());
-  reflection_tester.ExpectAllFieldsSetViaReflection(*message);
+    reflection_tester.SetAllFieldsViaReflection(message.get());
+    reflection_tester.ExpectAllFieldsSetViaReflection(*message);
 }
 
-TEST_F(DynamicMessageTest, Extensions) {
-  // Check that extensions work.
-  scoped_ptr<Message> message(extensions_prototype_->New());
-  TestUtil::ReflectionTester reflection_tester(extensions_descriptor_);
+TEST_F(DynamicMessageTest, Extensions)
+{
+    // Check that extensions work.
+    scoped_ptr<Message> message(extensions_prototype_->New());
+    TestUtil::ReflectionTester reflection_tester(extensions_descriptor_);
 
-  reflection_tester.SetAllFieldsViaReflection(message.get());
-  reflection_tester.ExpectAllFieldsSetViaReflection(*message);
+    reflection_tester.SetAllFieldsViaReflection(message.get());
+    reflection_tester.ExpectAllFieldsSetViaReflection(*message);
 }
 
-TEST_F(DynamicMessageTest, PackedFields) {
-  // Check that packed fields work properly.
-  scoped_ptr<Message> message(packed_prototype_->New());
-  TestUtil::ReflectionTester reflection_tester(packed_descriptor_);
+TEST_F(DynamicMessageTest, PackedFields)
+{
+    // Check that packed fields work properly.
+    scoped_ptr<Message> message(packed_prototype_->New());
+    TestUtil::ReflectionTester reflection_tester(packed_descriptor_);
 
-  reflection_tester.SetPackedFieldsViaReflection(message.get());
-  reflection_tester.ExpectPackedFieldsSetViaReflection(*message);
+    reflection_tester.SetPackedFieldsViaReflection(message.get());
+    reflection_tester.ExpectPackedFieldsSetViaReflection(*message);
 }
 
-TEST_F(DynamicMessageTest, Oneof) {
-  // Check that oneof fields work properly.
-  scoped_ptr<Message> message(oneof_prototype_->New());
+TEST_F(DynamicMessageTest, Oneof)
+{
+    // Check that oneof fields work properly.
+    scoped_ptr<Message> message(oneof_prototype_->New());
 
-  // Check default values.
-  const Descriptor* descriptor = message->GetDescriptor();
-  const Reflection* reflection = message->GetReflection();
-  EXPECT_EQ(0, reflection->GetInt32(
-      *message, descriptor->FindFieldByName("foo_int")));
-  EXPECT_EQ("", reflection->GetString(
-      *message, descriptor->FindFieldByName("foo_string")));
-  EXPECT_EQ("", reflection->GetString(
-      *message, descriptor->FindFieldByName("foo_cord")));
-  EXPECT_EQ("", reflection->GetString(
-      *message, descriptor->FindFieldByName("foo_string_piece")));
-  EXPECT_EQ("", reflection->GetString(
-      *message, descriptor->FindFieldByName("foo_bytes")));
-  EXPECT_EQ(unittest::TestOneof2::FOO, reflection->GetEnum(
-      *message, descriptor->FindFieldByName("foo_enum"))->number());
-  const Descriptor* nested_descriptor;
-  const Message* nested_prototype;
-  nested_descriptor =
-      pool_.FindMessageTypeByName("protobuf_unittest.TestOneof2.NestedMessage");
-  nested_prototype = factory_.GetPrototype(nested_descriptor);
-  EXPECT_EQ(nested_prototype,
+    // Check default values.
+    const Descriptor* descriptor = message->GetDescriptor();
+    const Reflection* reflection = message->GetReflection();
+    EXPECT_EQ(0, reflection->GetInt32(
+            *message, descriptor->FindFieldByName("foo_int")));
+    EXPECT_EQ("", reflection->GetString(
+            *message, descriptor->FindFieldByName("foo_string")));
+    EXPECT_EQ("", reflection->GetString(
+            *message, descriptor->FindFieldByName("foo_cord")));
+    EXPECT_EQ("", reflection->GetString(
+            *message, descriptor->FindFieldByName("foo_string_piece")));
+    EXPECT_EQ("", reflection->GetString(
+            *message, descriptor->FindFieldByName("foo_bytes")));
+    EXPECT_EQ(unittest::TestOneof2::FOO, reflection->GetEnum(
+            *message, descriptor->FindFieldByName("foo_enum"))->number());
+    const Descriptor* nested_descriptor;
+    const Message* nested_prototype;
+    nested_descriptor =
+            pool_.FindMessageTypeByName("protobuf_unittest.TestOneof2.NestedMessage");
+    nested_prototype = factory_.GetPrototype(nested_descriptor);
+    EXPECT_EQ(nested_prototype,
             &reflection->GetMessage(
-                *message, descriptor->FindFieldByName("foo_message")));
-  const Descriptor* foogroup_descriptor;
-  const Message* foogroup_prototype;
-  foogroup_descriptor =
-      pool_.FindMessageTypeByName("protobuf_unittest.TestOneof2.FooGroup");
-  foogroup_prototype = factory_.GetPrototype(foogroup_descriptor);
-  EXPECT_EQ(foogroup_prototype,
+            *message, descriptor->FindFieldByName("foo_message")));
+    const Descriptor* foogroup_descriptor;
+    const Message* foogroup_prototype;
+    foogroup_descriptor =
+            pool_.FindMessageTypeByName("protobuf_unittest.TestOneof2.FooGroup");
+    foogroup_prototype = factory_.GetPrototype(foogroup_descriptor);
+    EXPECT_EQ(foogroup_prototype,
             &reflection->GetMessage(
-                *message, descriptor->FindFieldByName("foogroup")));
-  EXPECT_NE(foogroup_prototype,
+            *message, descriptor->FindFieldByName("foogroup")));
+    EXPECT_NE(foogroup_prototype,
             &reflection->GetMessage(
-                *message, descriptor->FindFieldByName("foo_lazy_message")));
-  EXPECT_EQ(5, reflection->GetInt32(
-      *message, descriptor->FindFieldByName("bar_int")));
-  EXPECT_EQ("STRING", reflection->GetString(
-      *message, descriptor->FindFieldByName("bar_string")));
-  EXPECT_EQ("CORD", reflection->GetString(
-      *message, descriptor->FindFieldByName("bar_cord")));
-  EXPECT_EQ("SPIECE", reflection->GetString(
-      *message, descriptor->FindFieldByName("bar_string_piece")));
-  EXPECT_EQ("BYTES", reflection->GetString(
-      *message, descriptor->FindFieldByName("bar_bytes")));
-  EXPECT_EQ(unittest::TestOneof2::BAR, reflection->GetEnum(
-      *message, descriptor->FindFieldByName("bar_enum"))->number());
+            *message, descriptor->FindFieldByName("foo_lazy_message")));
+    EXPECT_EQ(5, reflection->GetInt32(
+            *message, descriptor->FindFieldByName("bar_int")));
+    EXPECT_EQ("STRING", reflection->GetString(
+            *message, descriptor->FindFieldByName("bar_string")));
+    EXPECT_EQ("CORD", reflection->GetString(
+            *message, descriptor->FindFieldByName("bar_cord")));
+    EXPECT_EQ("SPIECE", reflection->GetString(
+            *message, descriptor->FindFieldByName("bar_string_piece")));
+    EXPECT_EQ("BYTES", reflection->GetString(
+            *message, descriptor->FindFieldByName("bar_bytes")));
+    EXPECT_EQ(unittest::TestOneof2::BAR, reflection->GetEnum(
+            *message, descriptor->FindFieldByName("bar_enum"))->number());
 
-  // Check set functions.
-  TestUtil::ReflectionTester reflection_tester(oneof_descriptor_);
-  reflection_tester.SetOneofViaReflection(message.get());
-  reflection_tester.ExpectOneofSetViaReflection(*message);
+    // Check set functions.
+    TestUtil::ReflectionTester reflection_tester(oneof_descriptor_);
+    reflection_tester.SetOneofViaReflection(message.get());
+    reflection_tester.ExpectOneofSetViaReflection(*message);
 }
 
-TEST_F(DynamicMessageTest, SpaceUsed) {
-  // Test that SpaceUsed() works properly
+TEST_F(DynamicMessageTest, SpaceUsed)
+{
+    // Test that SpaceUsed() works properly
 
-  // Since we share the implementation with generated messages, we don't need
-  // to test very much here.  Just make sure it appears to be working.
+    // Since we share the implementation with generated messages, we don't need
+    // to test very much here.  Just make sure it appears to be working.
 
-  scoped_ptr<Message> message(prototype_->New());
-  TestUtil::ReflectionTester reflection_tester(descriptor_);
+    scoped_ptr<Message> message(prototype_->New());
+    TestUtil::ReflectionTester reflection_tester(descriptor_);
 
-  int initial_space_used = message->SpaceUsed();
+    int initial_space_used = message->SpaceUsed();
 
-  reflection_tester.SetAllFieldsViaReflection(message.get());
-  EXPECT_LT(initial_space_used, message->SpaceUsed());
+    reflection_tester.SetAllFieldsViaReflection(message.get());
+    EXPECT_LT(initial_space_used, message->SpaceUsed());
 }
 
-}  // namespace protobuf
-}  // namespace google
+} // namespace protobuf
+} // namespace google

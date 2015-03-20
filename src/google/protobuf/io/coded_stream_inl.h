@@ -46,24 +46,25 @@ namespace protobuf {
 namespace io {
 
 inline bool CodedInputStream::InternalReadStringInline(string* buffer,
-                                                       int size) {
-  if (size < 0) return false;  // security: size is often user-supplied
+        int size)
+{
+    if (size < 0) return false; // security: size is often user-supplied
 
-  if (BufferSize() >= size) {
-    STLStringResizeUninitialized(buffer, size);
-    // When buffer is empty, string_as_array(buffer) will return NULL but memcpy
-    // requires non-NULL pointers even when size is 0. Hench this check.
-    if (size > 0) {
-      memcpy(mutable_string_data(buffer), buffer_, size);
-      Advance(size);
+    if (BufferSize() >= size) {
+        STLStringResizeUninitialized(buffer, size);
+        // When buffer is empty, string_as_array(buffer) will return NULL but memcpy
+        // requires non-NULL pointers even when size is 0. Hench this check.
+        if (size > 0) {
+            memcpy(mutable_string_data(buffer), buffer_, size);
+            Advance(size);
+        }
+        return true;
     }
-    return true;
-  }
 
-  return ReadStringFallback(buffer, size);
+    return ReadStringFallback(buffer, size);
 }
 
-}  // namespace io
-}  // namespace protobuf
-}  // namespace google
+} // namespace io
+} // namespace protobuf
+} // namespace google
 #endif  // GOOGLE_PROTOBUF_IO_CODED_STREAM_INL_H__
