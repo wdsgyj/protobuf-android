@@ -430,12 +430,13 @@ GenerateParsingCode(io::Printer* printer) const
     } else {
         if (IsVariableLenType(GetJavaType(descriptor_))) {
             printer->Print(variables_,
+                    "$type$ value = input.read$capitalized_type$();\n"
                     "if (value == null) {\n"
                     "  has$capitalized_name$ = false;\n"
                     "  $name$_ = $default$;\n"
                     "} else {\n"
                     "  has$capitalized_name$ = true;\n"
-                    "  $name$_ = input.read$capitalized_type$();\n"
+                    "  $name$_ = value;\n"
                     "}\n"
                     );
         } else {
@@ -866,15 +867,24 @@ GenerateAddItemCode(io::Printer* printer) const
                 "}\n"
                 );
     } else {
-        printer->Print(variables_,
-                "$type$ value = input.read$capitalized_type$();\n"
-                "if (value != null) {\n"
-                "  if ($name$_.isEmpty()) {\n"
-                "    $name$_ = new java.util.ArrayList<$type$>();\n"
-                "  }\n"
-                "  $name$_.add(value);\n"
-                "}\n"
-                );
+        if (IsReferenceType(GetJavaType(descriptor_))) {
+            printer->Print(variables_,
+                    "$type$ value = input.read$capitalized_type$();\n"
+                    "if (value != null) {\n"
+                    "  if ($name$_.isEmpty()) {\n"
+                    "    $name$_ = new java.util.ArrayList<$type$>();\n"
+                    "  }\n"
+                    "  $name$_.add(value);\n"
+                    "}\n"
+                    );
+        } else {
+            printer->Print(variables_,
+                    "if ($name$_.isEmpty()) {\n"
+                    "  $name$_ = new java.util.ArrayList<$boxed_type$>();\n"
+                    "}\n"
+                    "$name$_.add(input.read$capitalized_type$());\n"
+                    );
+        }
     }
 }
 
