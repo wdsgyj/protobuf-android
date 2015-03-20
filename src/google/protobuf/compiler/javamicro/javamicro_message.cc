@@ -456,11 +456,6 @@ GenerateParseFromMethods(io::Printer* printer)
             "classname", descriptor_->name());
     if (!params_.java_simple_parsefrom()) {
         printer->Print(
-                "public static $classname$ parseFrom(byte[] data)\n"
-                "    throws com.google.protobuf.micro.InvalidProtocolBufferMicroException {\n"
-                "  return ($classname$) (new $classname$().mergeFrom(data));\n"
-                "}\n"
-                "\n"
                 "public static $classname$ parseFrom(byte[] data, int off, int len)\n"
                 "    throws com.google.protobuf.micro.InvalidProtocolBufferMicroException {\n"
                 "  return ($classname$) (new $classname$().mergeFrom(data, off, len));\n"
