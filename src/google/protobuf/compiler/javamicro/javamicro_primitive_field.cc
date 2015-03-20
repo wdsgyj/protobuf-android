@@ -522,50 +522,50 @@ GenerateFromJsonCode(io::Printer* printer) const
     case JAVATYPE_INT:
         printer->Print(variables_,
                 "for (int i = 0; i < count; ++i) {\n"
-                "  if ($name$_.isEmpty()) {\n"
-                "    $name$_ = new java.util.ArrayList<$boxed_type$>();\n"
+                "  if (result.$name$_.isEmpty()) {\n"
+                "    result.$name$_ = new java.util.ArrayList<$boxed_type$>();\n"
                 "  }\n"
-                "  $name$_.add(array.getInt(i));\n"
+                "  result.$name$_.add(array.getInt(i));\n"
                 //                "  result.add$capitalized_name$(array.getInt(i));\n"
                 );
         break;
     case JAVATYPE_LONG:
         printer->Print(variables_,
                 "for (int i = 0; i < count; ++i) {\n"
-                "  if ($name$_.isEmpty()) {\n"
-                "    $name$_ = new java.util.ArrayList<$boxed_type$>();\n"
+                "  if (result.$name$_.isEmpty()) {\n"
+                "    result.$name$_ = new java.util.ArrayList<$boxed_type$>();\n"
                 "  }\n"
-                "  $name$_.add(array.getLong(i));\n"
+                "  result.$name$_.add(array.getLong(i));\n"
                 //                "  result.add$capitalized_name$(array.getLong(i));\n"
                 );
         break;
     case JAVATYPE_FLOAT:
         printer->Print(variables_,
                 "for (int i = 0; i < count; ++i) {\n"
-                "  if ($name$_.isEmpty()) {\n"
-                "    $name$_ = new java.util.ArrayList<$boxed_type$>();\n"
+                "  if (result.$name$_.isEmpty()) {\n"
+                "    result.$name$_ = new java.util.ArrayList<$boxed_type$>();\n"
                 "  }\n"
-                "  $name$_.add((float) array.getDouble(i));\n"
+                "  result.$name$_.add((float) array.getDouble(i));\n"
                 //                "  result.add$capitalized_name$((float) array.getDouble(i));\n"
                 );
         break;
     case JAVATYPE_DOUBLE:
         printer->Print(variables_,
                 "for (int i = 0; i < count; ++i) {\n"
-                "  if ($name$_.isEmpty()) {\n"
-                "    $name$_ = new java.util.ArrayList<$boxed_type$>();\n"
+                "  if (result.$name$_.isEmpty()) {\n"
+                "    result.$name$_ = new java.util.ArrayList<$boxed_type$>();\n"
                 "  }\n"
-                "  $name$_.add(array.getDouble(i));\n"
+                "  result.$name$_.add(array.getDouble(i));\n"
                 //                "  result.add$capitalized_name$(array.getDouble(i));\n"
                 );
         break;
     case JAVATYPE_BOOLEAN:
         printer->Print(variables_,
                 "for (int i = 0; i < count; ++i) {\n"
-                "  if ($name$_.isEmpty()) {\n"
-                "    $name$_ = new java.util.ArrayList<$boxed_type$>();\n"
+                "  if (result.$name$_.isEmpty()) {\n"
+                "    result.$name$_ = new java.util.ArrayList<$boxed_type$>();\n"
                 "  }\n"
-                "  $name$_.add(array.getBoolean(i));\n"
+                "  result.$name$_.add(array.getBoolean(i));\n"
                 //                "  result.add$capitalized_name$(array.getBoolean(i));\n"
                 );
         break;
@@ -575,10 +575,10 @@ GenerateFromJsonCode(io::Printer* printer) const
                 "for (int i = 0; i < count; ++i) {\n"
                 "  value = array.getString(i);\n"
                 "  if (value != null) {\n"
-                "    if ($name$_.isEmpty()) {\n"
-                "      $name$_ = new java.util.ArrayList<$boxed_type$>();\n"
+                "    if (result.$name$_.isEmpty()) {\n"
+                "      result.$name$_ = new java.util.ArrayList<$boxed_type$>();\n"
                 "    }\n"
-                "    $name$_.add(value);\n"
+                "    result.$name$_.add(value);\n"
                 "  }\n  "
                 //                "  result.add$capitalized_name$(array.getString(i));\n"
                 );
@@ -589,10 +589,10 @@ GenerateFromJsonCode(io::Printer* printer) const
                 "for (int i = 0; i < count; ++i) {\n"
                 "  value = array.getString(i);\n"
                 "  if (value != null) {\n"
-                "    if ($name$_.isEmpty()) {\n"
-                "      $name$_ = new java.util.ArrayList<$boxed_type$>();\n"
+                "    if (result.$name$_.isEmpty()) {\n"
+                "      result.$name$_ = new java.util.ArrayList<$boxed_type$>();\n"
                 "    }\n"
-                "    $name$_.add(com.google.protobuf.micro.ByteStringMicro.copyFromUtf8(value));\n"
+                "    result.$name$_.add(com.google.protobuf.micro.ByteStringMicro.copyFromUtf8(value));\n"
                 //                "    result.add$capitalized_name$(\n"
                 //                "            com.google.protobuf.micro.ByteStringMicro.copyFromUtf8(value));\n"
                 "  }\n");
