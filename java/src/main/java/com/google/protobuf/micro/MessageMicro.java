@@ -124,6 +124,10 @@ public abstract class MessageMicro {
         }
     }
 
+    public String toJSON() throws Exception {
+        return "";
+    }
+
     /**
      * Called by subclasses to parse an unknown field.
      * @return {@code true} unless the tag is an end-group tag.
