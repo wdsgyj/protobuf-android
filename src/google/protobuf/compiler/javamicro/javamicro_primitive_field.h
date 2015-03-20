@@ -84,6 +84,9 @@ public:
     string GetBoxedType() const;
 
 private:
+    void GenerateAddItemCode(io::Printer* printer) const;
+    
+private:
     const FieldDescriptor* descriptor_;
     map<string, string> variables_;
 

@@ -90,8 +90,10 @@ GenerateFromJsonCode(io::Printer* printer) const
             "if (json.has(\"$original_name$\")) {\n"
             "  org.json.JSONObject value = json.optJSONObject(\"$original_name$\");\n"
             "  if (value != null) {\n"
-            "    result.set$capitalized_name$(\n"
-            "            $type$.fromJSON(value.toString()));\n"
+            "    has$capitalized_name$ = true;\n"
+            "    $name$_ = $type$.fromJSON(value.toString());\n"
+            //            "    result.set$capitalized_name$(\n"
+            //            "            $type$.fromJSON(value.toString()));\n"
             "  }\n"
             "}\n");
 }
@@ -111,28 +113,32 @@ GenerateToJsonCode(io::Printer* printer) const
 void MessageFieldGenerator::
 GenerateMembers(io::Printer* printer) const
 {
-    printer->Print(variables_,
-            "private boolean has$capitalized_name$;\n"
-            //    "private $type$ $name$_ = null;\n"
-            //    "public boolean has$capitalized_name$() { return has$capitalized_name$; }\n"
-            //    "public $type$ get$capitalized_name$() { return $name$_; }\n"
-            "private $type$ $name$_ = null;\n"
-            "public boolean has$capitalized_name$() { return has$capitalized_name$; }\n"
-            "public $type$ get$capitalized_name$() { return $name$_; }\n"
-            "public $message_name$ set$capitalized_name$($type$ value) {\n"
-            "  if (value == null) {\n"
-            //    "    throw new NullPointerException();\n"
-            "    return clear$capitalized_name$();\n"
-            "  }\n"
-            "  has$capitalized_name$ = true;\n"
-            "  $name$_ = value;\n"
-            "  return this;\n"
-            "}\n"
-            "public $message_name$ clear$capitalized_name$() {\n"
-            "  has$capitalized_name$ = false;\n"
-            "  $name$_ = null;\n"
-            "  return this;\n"
-            "}\n");
+    char* text;
+    if (params_.java_no_set()) {
+        text = "private boolean has$capitalized_name$;\n"
+                "private $type$ $name$_ = null;\n"
+                "public boolean has$capitalized_name$() { return has$capitalized_name$; }\n"
+                "public $type$ get$capitalized_name$() { return $name$_; }\n";
+    } else {
+        text = "private boolean has$capitalized_name$;\n"
+                "private $type$ $name$_ = null;\n"
+                "public boolean has$capitalized_name$() { return has$capitalized_name$; }\n"
+                "public $type$ get$capitalized_name$() { return $name$_; }\n"
+                "public $message_name$ set$capitalized_name$($type$ value) {\n"
+                "  if (value == null) {\n"
+                "    return clear$capitalized_name$();\n"
+                "  }\n"
+                "  has$capitalized_name$ = true;\n"
+                "  $name$_ = value;\n"
+                "  return this;\n"
+                "}\n"
+                "public $message_name$ clear$capitalized_name$() {\n"
+                "  has$capitalized_name$ = false;\n"
+                "  $name$_ = null;\n"
+                "  return this;\n"
+                "}\n";
+    }
+    printer->Print(variables_, text);
 }
 
 void MessageFieldGenerator::
@@ -159,7 +165,15 @@ GenerateParsingCode(io::Printer* printer) const
     }
 
     printer->Print(variables_,
-            "set$capitalized_name$(value);\n");
+            "if (value == null) {\n"
+            "  has$capitalized_name$ = false;\n"
+            "  $name$_ = null;\n"
+            "} else {\n"
+            "  has$capitalized_name$ = true;\n"
+            "  $name$_ = value;\n"
+            "}\n"
+            //            "set$capitalized_name$(value);\n"
+            );
 }
 
 void MessageFieldGenerator::
@@ -210,8 +224,12 @@ GenerateFromJsonCode(io::Printer* printer) const
             "  for (int i = 0; i < count; ++i) {\n"
             "    value = array.optJSONObject(i);\n"
             "    if (value != null) {\n"
-            "      result.add$capitalized_name$(\n"
-            "              $type$.fromJSON(value.toString()));\n"
+            "      if ($name$_.isEmpty()) {\n"
+            "        $name$_ = new java.util.ArrayList<$type$>();\n"
+            "      }\n"
+            "      $name$_.add($type$.fromJSON(value.toString()));\n"
+            //            "      result.add$capitalized_name$(\n"
+            //            "              $type$.fromJSON(value.toString()));\n"
             "    }\n"
             "  }\n"
             "}\n");
@@ -238,39 +256,50 @@ GenerateToJsonCode(io::Printer* printer) const
 void RepeatedMessageFieldGenerator::
 GenerateMembers(io::Printer* printer) const
 {
-    if (params_.java_use_vector()) {
-        printer->Print(variables_,
-                "private java.util.Vector $name$_ = new java.util.Vector();\n"
-                "public java.util.Vector get$capitalized_name$List() {\n"
+    //    if (params_.java_use_vector()) {
+    //        printer->Print(variables_,
+    //                "private java.util.Vector $name$_ = new java.util.Vector();\n"
+    //                "public java.util.Vector get$capitalized_name$List() {\n"
+    //                "  return $name$_;\n"
+    //                "}\n"
+    //                "public int get$capitalized_name$Count() { return $name$_.size(); }\n"
+    //                "public $type$ get$capitalized_name$(int index) {\n"
+    //                "  return ($type$) $name$_.elementAt(index);\n"
+    //                "}\n"
+    //                "public $message_name$ set$capitalized_name$(int index, $type$ value) {\n"
+    //                "  if (value == null) {\n"
+    //                //"    throw new NullPointerException();\n"
+    //                "    return this;\n"
+    //                "  }\n"
+    //                "  $name$_.setElementAt(value, index);\n"
+    //                "  return this;\n"
+    //                "}\n"
+    //                "public $message_name$ add$capitalized_name$($type$ value) {\n"
+    //                "  if (value == null) {\n"
+    //                //"    throw new NullPointerException();\n"
+    //                "    return this;\n"
+    //                "  }\n"
+    //                "  $name$_.addElement(value);\n"
+    //                "  return this;\n"
+    //                "}\n"
+    //                "public $message_name$ clear$capitalized_name$() {\n"
+    //                "  $name$_.removeAllElements();\n"
+    //                "  return this;\n"
+    //                "}\n");
+    //    } else {
+    char* text;
+    if (params_.java_no_set()) {
+        text = "private java.util.List<$type$> $name$_ =\n"
+                "  java.util.Collections.emptyList();\n"
+                "public java.util.List<$type$> get$capitalized_name$List() {\n"
                 "  return $name$_;\n"
                 "}\n"
                 "public int get$capitalized_name$Count() { return $name$_.size(); }\n"
                 "public $type$ get$capitalized_name$(int index) {\n"
-                "  return ($type$) $name$_.elementAt(index);\n"
-                "}\n"
-                "public $message_name$ set$capitalized_name$(int index, $type$ value) {\n"
-                "  if (value == null) {\n"
-                //"    throw new NullPointerException();\n"
-                "    return this;\n"
-                "  }\n"
-                "  $name$_.setElementAt(value, index);\n"
-                "  return this;\n"
-                "}\n"
-                "public $message_name$ add$capitalized_name$($type$ value) {\n"
-                "  if (value == null) {\n"
-                //"    throw new NullPointerException();\n"
-                "    return this;\n"
-                "  }\n"
-                "  $name$_.addElement(value);\n"
-                "  return this;\n"
-                "}\n"
-                "public $message_name$ clear$capitalized_name$() {\n"
-                "  $name$_.removeAllElements();\n"
-                "  return this;\n"
-                "}\n");
+                "  return $name$_.get(index);\n"
+                "}\n";
     } else {
-        printer->Print(variables_,
-                "private java.util.List<$type$> $name$_ =\n"
+        text = "private java.util.List<$type$> $name$_ =\n"
                 "  java.util.Collections.emptyList();\n"
                 "public java.util.List<$type$> get$capitalized_name$List() {\n"
                 "  return $name$_;\n"
@@ -281,7 +310,6 @@ GenerateMembers(io::Printer* printer) const
                 "}\n"
                 "public $message_name$ set$capitalized_name$(int index, $type$ value) {\n"
                 "  if (value == null) {\n"
-                //"    throw new NullPointerException();\n"
                 "    return this;\n"
                 "  }\n"
                 "  $name$_.set(index, value);\n"
@@ -289,7 +317,6 @@ GenerateMembers(io::Printer* printer) const
                 "}\n"
                 "public $message_name$ add$capitalized_name$($type$ value) {\n"
                 "  if (value == null) {\n"
-                //"    throw new NullPointerException();\n"
                 "    return this;\n"
                 "  }\n"
                 "  if ($name$_.isEmpty()) {\n"
@@ -301,29 +328,31 @@ GenerateMembers(io::Printer* printer) const
                 "public $message_name$ clear$capitalized_name$() {\n"
                 "  $name$_ = java.util.Collections.emptyList();\n"
                 "  return this;\n"
-                "}\n");
+                "}\n";
     }
+    printer->Print(variables_, text);
+    //    }
 }
 
 void RepeatedMessageFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const
 {
-    if (params_.java_use_vector()) {
-        printer->Print(variables_,
-                "if (other.$name$_.size() != 0) {\n"
-                "  for (int i = 0; i < other.$name$_.size(); i++) {\n"
-                "    result.$name$_.addElement(other.$name$_.elementAt(i));\n"
-                "  }\n"
-                "}\n");
-    } else {
-        printer->Print(variables_,
-                "if (!other.$name$_.isEmpty()) {\n"
-                "  if (result.$name$_.isEmpty()) {\n"
-                "    result.$name$_ = new java.util.ArrayList<$type$>();\n"
-                "  }\n"
-                "  result.$name$_.addAll(other.$name$_);\n"
-                "}\n");
-    }
+    //    if (params_.java_use_vector()) {
+    //        printer->Print(variables_,
+    //                "if (other.$name$_.size() != 0) {\n"
+    //                "  for (int i = 0; i < other.$name$_.size(); i++) {\n"
+    //                "    result.$name$_.addElement(other.$name$_.elementAt(i));\n"
+    //                "  }\n"
+    //                "}\n");
+    //    } else {
+    printer->Print(variables_,
+            "if (!other.$name$_.isEmpty()) {\n"
+            "  if (result.$name$_.isEmpty()) {\n"
+            "    result.$name$_ = new java.util.ArrayList<$type$>();\n"
+            "  }\n"
+            "  result.$name$_.addAll(other.$name$_);\n"
+            "}\n");
+    //    }
 }
 
 void RepeatedMessageFieldGenerator::
@@ -341,7 +370,14 @@ GenerateParsingCode(io::Printer* printer) const
     }
 
     printer->Print(variables_,
-            "add$capitalized_name$(value);\n");
+            "if (value != null) {\n"
+            "  if ($name$_.isEmpty()) {\n"
+            "    $name$_ = new java.util.ArrayList<$type$>();\n"
+            "  }\n"
+            "  $name$_.add(value);\n"
+            "}\n"
+            //            "add$capitalized_name$(value);\n"
+            );
 }
 
 void RepeatedMessageFieldGenerator::

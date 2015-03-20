@@ -250,38 +250,59 @@ GenerateFromJsonCode(io::Printer* printer) const
     switch (javaType) {
     case JAVATYPE_INT:
         printer->Print(variables_,
-                "result.set$capitalized_name$(json.getInt(\"$original_name$\"));\n");
+                "result.has$capitalized_name$ = true;\n"
+                "result.$name$_ = json.getInt(\"$original_name$\");\n"
+                //                "result.set$capitalized_name$(json.getInt(\"$original_name$\"));\n"
+                );
         break;
     case JAVATYPE_LONG:
         printer->Print(variables_,
-                "result.set$capitalized_name$(json.getLong(\"$original_name$\"));\n");
+                "result.has$capitalized_name$ = true;\n"
+                "result.$name$_ = json.getLong(\"$original_name$\");\n"
+                //                "result.set$capitalized_name$(json.getLong(\"$original_name$\"));\n"
+                );
         break;
     case JAVATYPE_FLOAT:
         printer->Print(variables_,
-                "result.set$capitalized_name$((float) json.getDouble(\"$original_name$\"));\n");
+                "result.has$capitalized_name$ = true;\n"
+                "result.$name$_ = (float) json.getDouble(\"$original_name$\");\n"
+                //                "result.set$capitalized_name$((float) json.getDouble(\"$original_name$\"));\n"
+                );
         break;
     case JAVATYPE_DOUBLE:
         printer->Print(variables_,
-                "result.set$capitalized_name$(json.getDouble(\"$original_name$\"));\n");
+                "result.has$capitalized_name$ = true;\n"
+                "result.$name$_ = json.getDouble(\"$original_name$\");\n"
+                //                "result.set$capitalized_name$(json.getDouble(\"$original_name$\"));\n"
+                );
         break;
     case JAVATYPE_BOOLEAN:
         printer->Print(variables_,
-                "result.set$capitalized_name$(json.getBoolean(\"$original_name$\"));\n");
+                "result.has$capitalized_name$ = true;\n"
+                "result.$name$_ = json.getBoolean(\"$original_name$\");\n"
+                //                "result.set$capitalized_name$(json.getBoolean(\"$original_name$\"));\n"
+                );
         break;
     case JAVATYPE_STRING:
         printer->Print(variables_,
                 "String value = json.getString(\"$original_name$\");\n"
                 "if (value != null) {\n"
-                "  result.set$capitalized_name$(value);\n"
-                "}\n");
+                "  result.has$capitalized_name$ = true;\n"
+                "  result.$name$_ = value;\n"
+                //                "  result.set$capitalized_name$(value);\n"
+                "}\n"
+                );
         break;
     case JAVATYPE_BYTES:
         printer->Print(variables_,
                 "String value = json.getString(\"$original_name$\");\n"
                 "if (value != null) {\n"
-                "  result.set$capitalized_name$(\n"
-                "          com.google.protobuf.micro.ByteStringMicro.copyFromUtf8(value));\n"
-                "}\n");
+                "  result.has$capitalized_name$ = true;\n"
+                "  result.$name$_ = com.google.protobuf.micro.ByteStringMicro.copyFromUtf8(value);\n"
+                //                "  result.set$capitalized_name$(\n"
+                //                "          com.google.protobuf.micro.ByteStringMicro.copyFromUtf8(value));\n"
+                "}\n"
+                );
         break;
     default:
         GOOGLE_LOG(FATAL) << "Can't get here.";
@@ -334,22 +355,28 @@ GenerateMembers(io::Printer* printer) const
             "public $type$ get$capitalized_name$() { return $name$_; }\n"
             "public boolean has$capitalized_name$() { return has$capitalized_name$; }\n");
     if (IsFastStringHandling(descriptor_, params_)) {
-        printer->Print(variables_,
-                "private byte [] $name$Utf8_ = null;\n"
-                "public $message_name$ set$capitalized_name$($type$ value) {\n"
-                "  has$capitalized_name$ = true;\n"
-                "  $name$_ = value;\n"
-                "  $name$Utf8_ = null;\n"
-                "  return this;\n"
-                "}\n"
-                "public $message_name$ clear$capitalized_name$() {\n"
-                "  has$capitalized_name$ = false;\n"
-                "  $name$_ = $default$;\n"
-                "  $name$Utf8_ = null;\n"
-                "  return this;\n"
-                "}\n");
-    } else {
+        // opt = speed
+        printer->Print(variables_, "private byte [] $name$Utf8_ = null;\n");
+        if (!params_.java_no_set()) {
+            printer->Print(variables_,
+                    //                "private byte [] $name$Utf8_ = null;\n"
+                    "public $message_name$ set$capitalized_name$($type$ value) {\n"
+                    "  has$capitalized_name$ = true;\n"
+                    "  $name$_ = value;\n"
+                    "  $name$Utf8_ = null;\n"
+                    "  return this;\n"
+                    "}\n"
+                    "public $message_name$ clear$capitalized_name$() {\n"
+                    "  has$capitalized_name$ = false;\n"
+                    "  $name$_ = $default$;\n"
+                    "  $name$Utf8_ = null;\n"
+                    "  return this;\n"
+                    "}\n");
+        }
+    } else if (!params_.java_no_set()) {
+        // opt = space
         if (IsVariableLenType(GetJavaType(descriptor_))) {
+            // string, byte[], message
             printer->Print(variables_,
                     "public $message_name$ set$capitalized_name$($type$ value) {\n"
                     "  if (value == null) {\n"
@@ -365,6 +392,7 @@ GenerateMembers(io::Printer* printer) const
                     "  return this;\n"
                     "}\n");
         } else {
+            // basic types
             printer->Print(variables_,
                     "public $message_name$ set$capitalized_name$($type$ value) {\n"
                     "  has$capitalized_name$ = true;\n"
@@ -392,8 +420,31 @@ GenerateMergingCode(io::Printer* printer) const
 void PrimitiveFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const
 {
-    printer->Print(variables_,
-            "set$capitalized_name$(input.read$capitalized_type$());\n");
+    if (IsFastStringHandling(descriptor_, params_)) {
+        printer->Print(variables_,
+                "has$capitalized_name$ = true;\n"
+                "$name$_ = input.read$capitalized_type$();\n"
+                "$name$Utf8_ = null;\n"
+                //                "set$capitalized_name$(input.read$capitalized_type$());\n"
+                );
+    } else {
+        if (IsVariableLenType(GetJavaType(descriptor_))) {
+            printer->Print(variables_,
+                    "if (value == null) {\n"
+                    "  has$capitalized_name$ = false;\n"
+                    "  $name$_ = $default$;\n"
+                    "} else {\n"
+                    "  has$capitalized_name$ = true;\n"
+                    "  $name$_ = input.read$capitalized_type$();\n"
+                    "}\n"
+                    );
+        } else {
+            printer->Print(variables_,
+                    "has$capitalized_name$ = true;\n"
+                    "$name$_ = input.read$capitalized_type$();\n"
+                    );
+        }
+    }
 }
 
 void PrimitiveFieldGenerator::
@@ -470,32 +521,66 @@ GenerateFromJsonCode(io::Printer* printer) const
     case JAVATYPE_INT:
         printer->Print(variables_,
                 "for (int i = 0; i < count; ++i) {\n"
-                "  result.add$capitalized_name$(array.getInt(i));\n");
+                "  if ($name$_.isEmpty()) {\n"
+                "    $name$_ = new java.util.ArrayList<$boxed_type$>();\n"
+                "  }\n"
+                "  $name$_.add(array.getInt(i));\n"
+                //                "  result.add$capitalized_name$(array.getInt(i));\n"
+                );
         break;
     case JAVATYPE_LONG:
         printer->Print(variables_,
                 "for (int i = 0; i < count; ++i) {\n"
-                "  result.add$capitalized_name$(array.getLong(i));\n");
+                "  if ($name$_.isEmpty()) {\n"
+                "    $name$_ = new java.util.ArrayList<$boxed_type$>();\n"
+                "  }\n"
+                "  $name$_.add(array.getLong(i));\n"
+                //                "  result.add$capitalized_name$(array.getLong(i));\n"
+                );
         break;
     case JAVATYPE_FLOAT:
         printer->Print(variables_,
                 "for (int i = 0; i < count; ++i) {\n"
-                "  result.add$capitalized_name$((float) array.getDouble(i));\n");
+                "  if ($name$_.isEmpty()) {\n"
+                "    $name$_ = new java.util.ArrayList<$boxed_type$>();\n"
+                "  }\n"
+                "  $name$_.add((float) array.getDouble(i));\n"
+                //                "  result.add$capitalized_name$((float) array.getDouble(i));\n"
+                );
         break;
     case JAVATYPE_DOUBLE:
         printer->Print(variables_,
                 "for (int i = 0; i < count; ++i) {\n"
-                "  result.add$capitalized_name$(array.getDouble(i));\n");
+                "  if ($name$_.isEmpty()) {\n"
+                "    $name$_ = new java.util.ArrayList<$boxed_type$>();\n"
+                "  }\n"
+                "  $name$_.add(array.getDouble(i));\n"
+                //                "  result.add$capitalized_name$(array.getDouble(i));\n"
+                );
         break;
     case JAVATYPE_BOOLEAN:
         printer->Print(variables_,
                 "for (int i = 0; i < count; ++i) {\n"
-                "  result.add$capitalized_name$(array.getBoolean(i));\n");
+                "  if ($name$_.isEmpty()) {\n"
+                "    $name$_ = new java.util.ArrayList<$boxed_type$>();\n"
+                "  }\n"
+                "  $name$_.add(array.getBoolean(i));\n"
+                //                "  result.add$capitalized_name$(array.getBoolean(i));\n"
+                );
         break;
     case JAVATYPE_STRING:
         printer->Print(variables_,
+                "String value;\n"
                 "for (int i = 0; i < count; ++i) {\n"
-                "  result.add$capitalized_name$(array.getString(i));\n");
+                "  value = array.getString(i);\n"
+                "  if (value != null) {\n"
+                "    if ($name$_.isEmpty()) {\n"
+                "      $name$_ = new java.util.ArrayList<$boxed_type$>();\n"
+                "    }\n"
+                "    $name$_.add(value);\n"
+                "  }\n  "
+                //                "  result.add$capitalized_name$(array.getString(i));\n"
+                );
         break;
     case JAVATYPE_BYTES:
         printer->Print(variables_,
@@ -503,8 +588,12 @@ GenerateFromJsonCode(io::Printer* printer) const
                 "for (int i = 0; i < count; ++i) {\n"
                 "  value = array.getString(i);\n"
                 "  if (value != null) {\n"
-                "    result.add$capitalized_name$(\n"
-                "            com.google.protobuf.micro.ByteStringMicro.copyFromUtf8(value));\n"
+                "    if ($name$_.isEmpty()) {\n"
+                "      $name$_ = new java.util.ArrayList<$boxed_type$>();\n"
+                "    }\n"
+                "    $name$_.add(com.google.protobuf.micro.ByteStringMicro.copyFromUtf8(value));\n"
+                //                "    result.add$capitalized_name$(\n"
+                //                "            com.google.protobuf.micro.ByteStringMicro.copyFromUtf8(value));\n"
                 "  }\n");
         break;
     default:
@@ -567,37 +656,49 @@ void RepeatedPrimitiveFieldGenerator::
 GenerateMembers(io::Printer* printer) const
 {
     if (IsFastStringHandling(descriptor_, params_)) {
-        if (params_.java_use_vector()) {
-            printer->Print(variables_,
-                    "private java.util.Vector $name$_ = new java.util.Vector();\n"
-                    "public java.util.Vector get$capitalized_name$List() {\n"
-                    "  return $name$_;\n"
+        //        if (params_.java_use_vector()) {
+        //            printer->Print(variables_,
+        //                    "private java.util.Vector $name$_ = new java.util.Vector();\n"
+        //                    "public java.util.Vector get$capitalized_name$List() {\n"
+        //                    "  return $name$_;\n"
+        //                    "}\n"
+        //                    "private java.util.Vector $name$Utf8_ = new java.util.Vector();\n"
+        //                    "public int get$capitalized_name$Count() { return $name$_.size(); }\n"
+        //                    "public $type$ get$capitalized_name$(int index) {\n"
+        //                    "  return (($type$)$name$_.elementAt(index));\n"
+        //                    "}\n"
+        //                    "public $message_name$ set$capitalized_name$(int index, $type$ value) {\n"
+        //                    "$null_check$"
+        //                    "  $name$_.setElementAt(value, index);\n"
+        //                    "  $name$Utf8_ = null;\n"
+        //                    "  return this;\n"
+        //                    "}\n"
+        //                    "public $message_name$ add$capitalized_name$($type$ value) {\n"
+        //                    "$null_check$"
+        //                    "  $name$_.addElement(value);\n"
+        //                    "  $name$Utf8_ = null;\n"
+        //                    "  return this;\n"
+        //                    "}\n"
+        //                    "public $message_name$ clear$capitalized_name$() {\n"
+        //                    "  $name$_.removeAllElements();\n"
+        //                    "  $name$Utf8_ = null;\n"
+        //                    "  return this;\n"
+        //                    "}\n");
+        //        } else {
+        char* text;
+        if (params_.java_no_set()) {
+            text = "private java.util.List<$type$> $name$_ =\n"
+                    "  java.util.Collections.emptyList();\n"
+                    "public java.util.List<$type$> get$capitalized_name$List() {\n"
+                    "  return $name$_;\n" // note:  unmodifiable list
                     "}\n"
-                    "private java.util.Vector $name$Utf8_ = new java.util.Vector();\n"
+                    "private java.util.List<byte []> $name$Utf8_ = null;\n"
                     "public int get$capitalized_name$Count() { return $name$_.size(); }\n"
                     "public $type$ get$capitalized_name$(int index) {\n"
-                    "  return (($type$)$name$_.elementAt(index));\n"
-                    "}\n"
-                    "public $message_name$ set$capitalized_name$(int index, $type$ value) {\n"
-                    "$null_check$"
-                    "  $name$_.setElementAt(value, index);\n"
-                    "  $name$Utf8_ = null;\n"
-                    "  return this;\n"
-                    "}\n"
-                    "public $message_name$ add$capitalized_name$($type$ value) {\n"
-                    "$null_check$"
-                    "  $name$_.addElement(value);\n"
-                    "  $name$Utf8_ = null;\n"
-                    "  return this;\n"
-                    "}\n"
-                    "public $message_name$ clear$capitalized_name$() {\n"
-                    "  $name$_.removeAllElements();\n"
-                    "  $name$Utf8_ = null;\n"
-                    "  return this;\n"
-                    "}\n");
+                    "  return $name$_.get(index);\n"
+                    "}\n";
         } else {
-            printer->Print(variables_,
-                    "private java.util.List<$type$> $name$_ =\n"
+            text = "private java.util.List<$type$> $name$_ =\n"
                     "  java.util.Collections.emptyList();\n"
                     "public java.util.List<$type$> get$capitalized_name$List() {\n"
                     "  return $name$_;\n" // note:  unmodifiable list
@@ -626,86 +727,102 @@ GenerateMembers(io::Printer* printer) const
                     "  $name$_ = java.util.Collections.emptyList();\n"
                     "  $name$Utf8_ = null;\n"
                     "  return this;\n"
-                    "}\n");
+                    "}\n";
         }
-    } else if (params_.java_use_vector()) {
-        if (IsReferenceType(GetJavaType(descriptor_))) {
-            printer->Print(variables_,
-                    "private java.util.Vector $name$_ = new java.util.Vector();\n"
-                    "public java.util.Vector get$capitalized_name$List() {\n"
-                    "  return $name$_;\n"
+        printer->Print(variables_, text);
+        //        }
+    }//    else if (params_.java_use_vector()) {
+        //        if (IsReferenceType(GetJavaType(descriptor_))) {
+        //            printer->Print(variables_,
+        //                    "private java.util.Vector $name$_ = new java.util.Vector();\n"
+        //                    "public java.util.Vector get$capitalized_name$List() {\n"
+        //                    "  return $name$_;\n"
+        //                    "}\n"
+        //                    "public int get$capitalized_name$Count() { return $name$_.size(); }\n"
+        //                    "public $type$ get$capitalized_name$(int index) {\n"
+        //                    "  return ($type$) $name$_.elementAt(index);\n"
+        //                    "}\n"
+        //                    "public $message_name$ set$capitalized_name$(int index, $type$ value) {\n"
+        //                    "$null_check$"
+        //                    "  $name$_.setElementAt(value, index);\n"
+        //                    "  return this;\n"
+        //                    "}\n"
+        //                    "public $message_name$ add$capitalized_name$($type$ value) {\n"
+        //                    "$null_check$"
+        //                    "  $name$_.addElement(value);\n"
+        //                    "  return this;\n"
+        //                    "}\n"
+        //                    "public $message_name$ clear$capitalized_name$() {\n"
+        //                    "  $name$_.removeAllElements();\n"
+        //                    "  return this;\n"
+        //                    "}\n");
+        //        } else {
+        //            printer->Print(variables_,
+        //                    "private java.util.Vector $name$_ = new java.util.Vector();\n"
+        //                    "public java.util.Vector get$capitalized_name$List() {\n"
+        //                    "  return $name$_;\n"
+        //                    "}\n"
+        //                    "public int get$capitalized_name$Count() { return $name$_.size(); }\n"
+        //                    "public $type$ get$capitalized_name$(int index) {\n"
+        //                    "  return (($boxed_type$)$name$_.elementAt(index)).$type$Value();\n"
+        //                    "}\n"
+        //                    "public $message_name$ set$capitalized_name$(int index, $type$ value) {\n"
+        //                    "$null_check$"
+        //                    "  $name$_.setElementAt(new $boxed_type$(value), index);\n"
+        //                    "  return this;\n"
+        //                    "}\n"
+        //                    "public $message_name$ add$capitalized_name$($type$ value) {\n"
+        //                    "$null_check$"
+        //                    "  $name$_.addElement(new $boxed_type$(value));\n"
+        //                    "  return this;\n"
+        //                    "}\n"
+        //                    "public $message_name$ clear$capitalized_name$() {\n"
+        //                    "  $name$_.removeAllElements();\n"
+        //                    "  return this;\n"
+        //                    "}\n");
+        //        }
+        //    } 
+    else {
+        char* text;
+        if (params_.java_no_set()) {
+            text = "private java.util.List<$boxed_type$> $name$_ =\n"
+                    "  java.util.Collections.emptyList();\n"
+                    "public java.util.List<$boxed_type$> get$capitalized_name$List() {\n"
+                    "  return $name$_;\n" // note:  unmodifiable list
                     "}\n"
                     "public int get$capitalized_name$Count() { return $name$_.size(); }\n"
                     "public $type$ get$capitalized_name$(int index) {\n"
-                    "  return ($type$) $name$_.elementAt(index);\n"
-                    "}\n"
-                    "public $message_name$ set$capitalized_name$(int index, $type$ value) {\n"
-                    "$null_check$"
-                    "  $name$_.setElementAt(value, index);\n"
-                    "  return this;\n"
-                    "}\n"
-                    "public $message_name$ add$capitalized_name$($type$ value) {\n"
-                    "$null_check$"
-                    "  $name$_.addElement(value);\n"
-                    "  return this;\n"
-                    "}\n"
-                    "public $message_name$ clear$capitalized_name$() {\n"
-                    "  $name$_.removeAllElements();\n"
-                    "  return this;\n"
-                    "}\n");
+                    "  return $name$_.get(index);\n"
+                    "}\n";
         } else {
-            printer->Print(variables_,
-                    "private java.util.Vector $name$_ = new java.util.Vector();\n"
-                    "public java.util.Vector get$capitalized_name$List() {\n"
-                    "  return $name$_;\n"
+            text = "private java.util.List<$boxed_type$> $name$_ =\n"
+                    "  java.util.Collections.emptyList();\n"
+                    "public java.util.List<$boxed_type$> get$capitalized_name$List() {\n"
+                    "  return $name$_;\n" // note:  unmodifiable list
                     "}\n"
                     "public int get$capitalized_name$Count() { return $name$_.size(); }\n"
                     "public $type$ get$capitalized_name$(int index) {\n"
-                    "  return (($boxed_type$)$name$_.elementAt(index)).$type$Value();\n"
+                    "  return $name$_.get(index);\n"
                     "}\n"
                     "public $message_name$ set$capitalized_name$(int index, $type$ value) {\n"
                     "$null_check$"
-                    "  $name$_.setElementAt(new $boxed_type$(value), index);\n"
+                    "  $name$_.set(index, value);\n"
                     "  return this;\n"
                     "}\n"
                     "public $message_name$ add$capitalized_name$($type$ value) {\n"
                     "$null_check$"
-                    "  $name$_.addElement(new $boxed_type$(value));\n"
+                    "  if ($name$_.isEmpty()) {\n"
+                    "    $name$_ = new java.util.ArrayList<$boxed_type$>();\n"
+                    "  }\n"
+                    "  $name$_.add(value);\n"
                     "  return this;\n"
                     "}\n"
                     "public $message_name$ clear$capitalized_name$() {\n"
-                    "  $name$_.removeAllElements();\n"
+                    "  $name$_ = java.util.Collections.emptyList();\n"
                     "  return this;\n"
-                    "}\n");
+                    "}\n";
         }
-    } else {
-        printer->Print(variables_,
-                "private java.util.List<$boxed_type$> $name$_ =\n"
-                "  java.util.Collections.emptyList();\n"
-                "public java.util.List<$boxed_type$> get$capitalized_name$List() {\n"
-                "  return $name$_;\n" // note:  unmodifiable list
-                "}\n"
-                "public int get$capitalized_name$Count() { return $name$_.size(); }\n"
-                "public $type$ get$capitalized_name$(int index) {\n"
-                "  return $name$_.get(index);\n"
-                "}\n"
-                "public $message_name$ set$capitalized_name$(int index, $type$ value) {\n"
-                "$null_check$"
-                "  $name$_.set(index, value);\n"
-                "  return this;\n"
-                "}\n"
-                "public $message_name$ add$capitalized_name$($type$ value) {\n"
-                "$null_check$"
-                "  if ($name$_.isEmpty()) {\n"
-                "    $name$_ = new java.util.ArrayList<$boxed_type$>();\n"
-                "  }\n"
-                "  $name$_.add(value);\n"
-                "  return this;\n"
-                "}\n"
-                "public $message_name$ clear$capitalized_name$() {\n"
-                "  $name$_ = java.util.Collections.emptyList();\n"
-                "  return this;\n"
-                "}\n");
+        printer->Print(variables_, text);
     }
     if (descriptor_->options().packed()) {
         printer->Print(variables_,
@@ -716,21 +833,48 @@ GenerateMembers(io::Printer* printer) const
 void RepeatedPrimitiveFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const
 {
-    if (params_.java_use_vector()) {
+    //    if (params_.java_use_vector()) {
+    //        printer->Print(variables_,
+    //                "if (other.$name$_.size() != 0) {\n"
+    //                "  for (int i = 0; i < other.$name$_.size(); i++)) {\n"
+    //                "    result.$name$_.addElement(other.$name$_.elementAt(i));\n"
+    //                "  }\n"
+    //                "}\n");
+    //    } else {
+    printer->Print(variables_,
+            "if (!other.$name$_.isEmpty()) {\n"
+            "  if (result.$name$_.isEmpty()) {\n"
+            "    result.$name$_ = new java.util.ArrayList<$type$>();\n"
+            "  }\n"
+            "  result.$name$_.addAll(other.$name$_);\n"
+            "}\n");
+    //    }
+}
+
+void RepeatedPrimitiveFieldGenerator::
+GenerateAddItemCode(io::Printer* printer) const
+{
+    if (IsFastStringHandling(descriptor_, params_)) {
         printer->Print(variables_,
-                "if (other.$name$_.size() != 0) {\n"
-                "  for (int i = 0; i < other.$name$_.size(); i++)) {\n"
-                "    result.$name$_.addElement(other.$name$_.elementAt(i));\n"
+                "$type$ value = input.read$capitalized_type$();\n"
+                "if (value != null) {\n"
+                "  if ($name$_.isEmpty()) {\n"
+                "    $name$_ = new java.util.ArrayList<$type$>();\n"
                 "  }\n"
-                "}\n");
+                "  $name$_.add(value);\n"
+                "  $name$Utf8_ = null;\n"
+                "}\n"
+                );
     } else {
         printer->Print(variables_,
-                "if (!other.$name$_.isEmpty()) {\n"
-                "  if (result.$name$_.isEmpty()) {\n"
-                "    result.$name$_ = new java.util.ArrayList<$type$>();\n"
+                "$type$ value = input.read$capitalized_type$();\n"
+                "if (value != null) {\n"
+                "  if ($name$_.isEmpty()) {\n"
+                "    $name$_ = new java.util.ArrayList<$type$>();\n"
                 "  }\n"
-                "  result.$name$_.addAll(other.$name$_);\n"
-                "}\n");
+                "  $name$_.add(value);\n"
+                "}\n"
+                );
     }
 }
 
@@ -741,13 +885,16 @@ GenerateParsingCode(io::Printer* printer) const
         printer->Print(variables_,
                 "int length = input.readRawVarint32();\n"
                 "int limit = input.pushLimit(length);\n"
-                "while (input.getBytesUntilLimit() > 0) {\n"
-                "  add$capitalized_name$(input.read$capitalized_type$());\n"
-                "}\n"
+                "while (input.getBytesUntilLimit() > 0) {\n");
+        printer->Indent();
+        GenerateAddItemCode(printer);
+        printer->Outdent();
+        printer->Print("}\n"
                 "input.popLimit(limit);\n");
     } else {
-        printer->Print(variables_,
-                "add$capitalized_name$(input.read$capitalized_type$());\n");
+        GenerateAddItemCode(printer);
+        //        printer->Print(variables_,
+        //                "add$capitalized_name$(input.read$capitalized_type$());\n");
     }
 }
 
@@ -760,43 +907,43 @@ GenerateSerializationCode(io::Printer* printer) const
                 "  output.writeRawVarint32($tag$);\n"
                 "  output.writeRawVarint32($name$MemoizedSerializedSize);\n"
                 "}\n");
-        if (params_.java_use_vector()) {
+        //        if (params_.java_use_vector()) {
+        //            printer->Print(variables_,
+        //                    "for (int i = 0; i < get$capitalized_name$List().size(); i++) {\n"
+        //                    "  output.write$capitalized_type$NoTag(get$capitalized_name$(i));\n"
+        //                    "}\n");
+        //        } else {
+        printer->Print(variables_,
+                "for ($type$ element : get$capitalized_name$List()) {\n"
+                "  output.write$capitalized_type$NoTag(element);\n"
+                "}\n");
+        //        }
+    } else {
+        //        if (params_.java_use_vector()) {
+        //            if (IsFastStringHandling(descriptor_, params_)) {
+        //                printer->Print(variables_,
+        //                        "for (int i = 0; i < $name$Utf8_.size(); i++) {\n"
+        //                        "  output.writeByteArray($number$, (byte []) $name$Utf8_.get(i));\n"
+        //                        "}\n");
+        //            } else {
+        //                printer->Print(variables_,
+        //                        "for (int i = 0; i < get$capitalized_name$List().size(); i++) {\n"
+        //                        "  output.write$capitalized_type$($number$, get$capitalized_name$(i));\n"
+        //                        "}\n");
+        //            }
+        //        } else {
+        if (IsFastStringHandling(descriptor_, params_)) {
             printer->Print(variables_,
-                    "for (int i = 0; i < get$capitalized_name$List().size(); i++) {\n"
-                    "  output.write$capitalized_type$NoTag(get$capitalized_name$(i));\n"
+                    "for (byte [] element : $name$Utf8_) {\n"
+                    "  output.writeByteArray($number$, element);\n"
                     "}\n");
         } else {
             printer->Print(variables_,
                     "for ($type$ element : get$capitalized_name$List()) {\n"
-                    "  output.write$capitalized_type$NoTag(element);\n"
+                    "  output.write$capitalized_type$($number$, element);\n"
                     "}\n");
         }
-    } else {
-        if (params_.java_use_vector()) {
-            if (IsFastStringHandling(descriptor_, params_)) {
-                printer->Print(variables_,
-                        "for (int i = 0; i < $name$Utf8_.size(); i++) {\n"
-                        "  output.writeByteArray($number$, (byte []) $name$Utf8_.get(i));\n"
-                        "}\n");
-            } else {
-                printer->Print(variables_,
-                        "for (int i = 0; i < get$capitalized_name$List().size(); i++) {\n"
-                        "  output.write$capitalized_type$($number$, get$capitalized_name$(i));\n"
-                        "}\n");
-            }
-        } else {
-            if (IsFastStringHandling(descriptor_, params_)) {
-                printer->Print(variables_,
-                        "for (byte [] element : $name$Utf8_) {\n"
-                        "  output.writeByteArray($number$, element);\n"
-                        "}\n");
-            } else {
-                printer->Print(variables_,
-                        "for ($type$ element : get$capitalized_name$List()) {\n"
-                        "  output.write$capitalized_type$($number$, element);\n"
-                        "}\n");
-            }
-        }
+        //        }
     }
 }
 
@@ -809,55 +956,55 @@ GenerateSerializedSizeCode(io::Printer* printer) const
     printer->Indent();
 
     if (FixedSize(descriptor_->type()) == -1) {
-        if (params_.java_use_vector()) {
-            if (IsFastStringHandling(descriptor_, params_)) {
-                printer->Print(variables_,
-                        "$name$Utf8_ = new java.util.Vector();\n"
-                        "byte[] bytes = null;\n"
-                        "int sizeArray = get$capitalized_name$List().size();\n"
-                        "for (int i = 0; i < sizeArray; i++) {\n"
-                        "  $type$ element = ($type$)$name$_.elementAt(i);\n"
-                        "  try {\n"
-                        "    bytes = element.getBytes(\"UTF-8\");\n"
-                        "  } catch (java.io.UnsupportedEncodingException e) {\n"
-                        "    throw new RuntimeException(\"UTF-8 not supported.\");\n"
-                        "  }\n"
-                        "  $name$Utf8_.addElement(bytes);\n"
-                        "  dataSize += com.google.protobuf.micro.CodedOutputStreamMicro\n"
-                        "    .computeByteArraySizeNoTag(bytes);\n"
-                        "}\n");
-            } else {
-                printer->Print(variables_,
-                        "for (int i = 0; i < get$capitalized_name$List().size(); i++) {\n"
-                        "  dataSize += com.google.protobuf.micro.CodedOutputStreamMicro\n"
-                        "    .compute$capitalized_type$SizeNoTag(($type$)get$capitalized_name$(i));\n"
-                        "}\n");
-            }
+        //        if (params_.java_use_vector()) {
+        //            if (IsFastStringHandling(descriptor_, params_)) {
+        //                printer->Print(variables_,
+        //                        "$name$Utf8_ = new java.util.Vector();\n"
+        //                        "byte[] bytes = null;\n"
+        //                        "int sizeArray = get$capitalized_name$List().size();\n"
+        //                        "for (int i = 0; i < sizeArray; i++) {\n"
+        //                        "  $type$ element = ($type$)$name$_.elementAt(i);\n"
+        //                        "  try {\n"
+        //                        "    bytes = element.getBytes(\"UTF-8\");\n"
+        //                        "  } catch (java.io.UnsupportedEncodingException e) {\n"
+        //                        "    throw new RuntimeException(\"UTF-8 not supported.\");\n"
+        //                        "  }\n"
+        //                        "  $name$Utf8_.addElement(bytes);\n"
+        //                        "  dataSize += com.google.protobuf.micro.CodedOutputStreamMicro\n"
+        //                        "    .computeByteArraySizeNoTag(bytes);\n"
+        //                        "}\n");
+        //            } else {
+        //                printer->Print(variables_,
+        //                        "for (int i = 0; i < get$capitalized_name$List().size(); i++) {\n"
+        //                        "  dataSize += com.google.protobuf.micro.CodedOutputStreamMicro\n"
+        //                        "    .compute$capitalized_type$SizeNoTag(($type$)get$capitalized_name$(i));\n"
+        //                        "}\n");
+        //            }
+        //        } else {
+        if (IsFastStringHandling(descriptor_, params_)) {
+            printer->Print(variables_,
+                    "$name$Utf8_ = new java.util.ArrayList<byte[]>();\n"
+                    "byte[] bytes = null;\n"
+                    "int sizeArray = get$capitalized_name$List().size();\n"
+                    "for (int i = 0; i < sizeArray; i++) {\n"
+                    "   $type$ element = get$capitalized_name$(i);\n"
+                    "  try {\n"
+                    "    bytes = element.getBytes(\"UTF-8\");\n"
+                    "  } catch (java.io.UnsupportedEncodingException e) {\n"
+                    "    throw new RuntimeException(\"UTF-8 not supported.\");\n"
+                    "  }\n"
+                    "  $name$Utf8_.add(bytes);\n"
+                    "  dataSize += com.google.protobuf.micro.CodedOutputStreamMicro\n"
+                    "    .computeByteArraySizeNoTag(bytes);\n"
+                    "}\n");
         } else {
-            if (IsFastStringHandling(descriptor_, params_)) {
-                printer->Print(variables_,
-                        "$name$Utf8_ = new java.util.ArrayList<byte[]>();\n"
-                        "byte[] bytes = null;\n"
-                        "int sizeArray = get$capitalized_name$List().size();\n"
-                        "for (int i = 0; i < sizeArray; i++) {\n"
-                        "   $type$ element = get$capitalized_name$(i);\n"
-                        "  try {\n"
-                        "    bytes = element.getBytes(\"UTF-8\");\n"
-                        "  } catch (java.io.UnsupportedEncodingException e) {\n"
-                        "    throw new RuntimeException(\"UTF-8 not supported.\");\n"
-                        "  }\n"
-                        "  $name$Utf8_.add(bytes);\n"
-                        "  dataSize += com.google.protobuf.micro.CodedOutputStreamMicro\n"
-                        "    .computeByteArraySizeNoTag(bytes);\n"
-                        "}\n");
-            } else {
-                printer->Print(variables_,
-                        "for ($type$ element : get$capitalized_name$List()) {\n"
-                        "  dataSize += com.google.protobuf.micro.CodedOutputStreamMicro\n"
-                        "    .compute$capitalized_type$SizeNoTag(element);\n"
-                        "}\n");
-            }
+            printer->Print(variables_,
+                    "for ($type$ element : get$capitalized_name$List()) {\n"
+                    "  dataSize += com.google.protobuf.micro.CodedOutputStreamMicro\n"
+                    "    .compute$capitalized_type$SizeNoTag(element);\n"
+                    "}\n");
         }
+        //        }
     } else {
         printer->Print(variables_,
                 "dataSize = $fixed_size$ * get$capitalized_name$List().size();\n");
@@ -867,13 +1014,13 @@ GenerateSerializedSizeCode(io::Printer* printer) const
             "size += dataSize;\n");
 
     if (descriptor_->options().packed()) {
-        if (params_.java_use_vector()) {
-            printer->Print(variables_,
-                    "if (get$capitalized_name$List().size() != 0) {\n");
-        } else {
-            printer->Print(variables_,
-                    "if (!get$capitalized_name$List().isEmpty()) {\n");
-        }
+        //        if (params_.java_use_vector()) {
+        //            printer->Print(variables_,
+        //                    "if (get$capitalized_name$List().size() != 0) {\n");
+        //        } else {
+        printer->Print(variables_,
+                "if (!get$capitalized_name$List().isEmpty()) {\n");
+        //        }
         printer->Print(variables_,
                 "  size += $tag_size$;\n"
                 "  size += com.google.protobuf.micro.CodedOutputStreamMicro\n"
