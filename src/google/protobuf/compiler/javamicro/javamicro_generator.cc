@@ -149,7 +149,7 @@ bool JavaMicroGenerator::Generate(const FileDescriptor* file,
         } else if (options[i].first == "java_simple_parsefrom") {
             params.set_java_simple_parsefrom(options[i].second == "true");
         } else if (options[i].first == "java_no_set") {
-            params.set_java_simple_parsefrom(options[i].second == "true");
+            params.set_java_no_set(options[i].second == "true");
         } else if (options[i].first == "java_same_package") {
             params.set_java_same_package(options[i].second);
         } else {
